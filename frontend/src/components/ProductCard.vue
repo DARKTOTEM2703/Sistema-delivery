@@ -1,17 +1,27 @@
 <template>
   <div class="product-card">
-    <div class="product-image">
-      <img v-if="product.image" :src="product.image" :alt="product.name" loading="lazy">
+    <!-- Contenedor para la imagen con tamaño fijo -->
+    <div class="product-image-container">
+      <img 
+        v-if="product.image" 
+        :src="product.image" 
+        :alt="product.name" 
+        class="product-image"
+        loading="lazy"
+      >
       <div v-else class="placeholder-image">
         <span>📷</span>
       </div>
     </div>
+    
     <div class="product-info">
       <div class="product-header">
         <h3 class="product-name">{{ product.name }}</h3>
         <span class="product-price">${{ product.price.toFixed(2) }}</span>
       </div>
+      
       <p class="product-description">{{ product.description }}</p>
+      
       <div class="product-meta">
         <div class="rating">
           <span class="star">⭐</span>
@@ -26,6 +36,7 @@
           <span>{{ product.servings }}</span>
         </div>
       </div>
+      
       <button class="add-button" @click="addToCart">
         <span class="plus-icon">+</span>
         Agregar
@@ -67,10 +78,31 @@ function addToCart() {
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-.product-image, .placeholder-image {
+/* Contenedor con dimensiones fijas para la imagen */
+.product-image-container {
   width: 100%;
-  height: 200px;
+  height: 200px; /* Altura fija para todas las imágenes */
+  overflow: hidden;
+  position: relative;
   background-color: rgba(128, 128, 128, 0.1);
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Mantiene la proporción y cubre el área */
+  object-position: center; /* Centra el contenido de la imagen */
+  transition: transform 0.3s;
+}
+
+/* Efecto hover para la imagen */
+.product-image-container:hover .product-image {
+  transform: scale(1.05);
+}
+
+.placeholder-image {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,6 +145,13 @@ function addToCart() {
   opacity: 0.8;
   margin-bottom: 1rem;
   line-height: 1.4;
+  /* Truncar texto largo */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 4.2em; /* Altura fija para 3 líneas */
 }
 
 .product-meta {
