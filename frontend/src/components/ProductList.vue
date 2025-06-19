@@ -21,6 +21,13 @@ import ProductCard from './ProductCard.vue';
 const activeCategory = ref('hamburguesas');
 const emit = defineEmits(['add-to-cart']);
 
+const props = defineProps({
+  searchQuery: {
+    type: String,
+    default: ''
+  }
+});
+
 const products = ref([
   {
     id: 1,
@@ -99,7 +106,18 @@ const products = ref([
 ]);
 
 const filteredProducts = computed(() => {
-  return products.value.filter(product => product.category === activeCategory.value);
+  let filtered = products.value.filter(product => product.category === activeCategory.value);
+  
+  // Si hay un término de búsqueda, filtrar por nombre o descripción
+  if (props.searchQuery) {
+    const searchTerm = props.searchQuery.toLowerCase();
+    filtered = filtered.filter(product => 
+      product.name.toLowerCase().includes(searchTerm) || 
+      product.description.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  return filtered;
 });
 
 function changeCategory(category) {
