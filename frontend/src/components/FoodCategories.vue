@@ -37,10 +37,11 @@ function setActiveCategory(categoryId) {
   display: flex;
   justify-content: space-around;
   padding: 1rem 0;
-  background-color: #f9f9f9;
+  background-color: var(--card-bg);
   border-radius: 8px;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
 }
 
 .category-item {
@@ -52,15 +53,16 @@ function setActiveCategory(categoryId) {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: var(--text-color);
 }
 
 .category-item:hover {
-  background-color: #f0f0f0;
+  background-color: rgba(128, 128, 128, 0.1);
 }
 
 .category-item.active {
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: var(--button-primary);
+  color: white;
 }
 
 .category-icon {
@@ -69,5 +71,16 @@ function setActiveCategory(categoryId) {
 
 .category-name {
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .categories-container {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .category-item {
+    padding: 0.5rem 1rem;
+  }
 }
 </style>

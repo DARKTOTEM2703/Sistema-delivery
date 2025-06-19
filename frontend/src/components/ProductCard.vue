@@ -1,7 +1,7 @@
 <template>
   <div class="product-card">
     <div class="product-image">
-      <img v-if="product.image" :src="product.image" :alt="product.name">
+      <img v-if="product.image" :src="product.image" :alt="product.name" loading="lazy">
       <div v-else class="placeholder-image">
         <span>📷</span>
       </div>
@@ -53,17 +53,24 @@ function addToCart() {
 .product-card {
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background-color: var(--card-bg);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--box-shadow);
   height: 100%;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid var(--border-color);
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .product-image, .placeholder-image {
   width: 100%;
   height: 200px;
-  background-color: #f0f0f0;
+  background-color: rgba(128, 128, 128, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +78,7 @@ function addToCart() {
 
 .placeholder-image span {
   font-size: 3rem;
-  color: #ccc;
+  color: var(--border-color);
 }
 
 .product-info {
@@ -92,16 +99,18 @@ function addToCart() {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
+  color: var(--text-color);
 }
 
 .product-price {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
+  color: #ff6b00;
 }
 
 .product-description {
-  color: #666;
+  color: var(--text-color);
+  opacity: 0.8;
   margin-bottom: 1rem;
   line-height: 1.4;
 }
@@ -117,7 +126,8 @@ function addToCart() {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #666;
+  color: var(--text-color);
+  opacity: 0.7;
   font-size: 0.9rem;
 }
 
@@ -126,19 +136,21 @@ function addToCart() {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #222;
+  background: var(--button-primary);
   color: white;
   border: none;
   border-radius: 6px;
   padding: 0.75rem 1.5rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: transform 0.2s, box-shadow 0.2s;
   margin-top: auto;
   width: fit-content;
 }
 
 .add-button:hover {
-  background-color: #000;
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+  background: var(--button-hover);
 }
 </style>
