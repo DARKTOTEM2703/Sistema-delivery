@@ -6,6 +6,9 @@ import ProductList from './components/ProductList.vue';
 import CartSidebar from './components/CartSidebar.vue';
 import Toast from './components/Toast.vue';
 import SearchBar from './components/SearchBar.vue';
+import CheckoutForm from './components/CheckoutForm.vue';
+import Login from './components/Login.vue';
+import auth from './services/auth';
 
 // Estado del carrito
 const cartItems = ref([]);
@@ -14,6 +17,7 @@ const cartTotal = ref(0);
 const showToast = ref(false);
 const toastMessage = ref('');
 const searchQuery = ref('');
+const isCheckoutActive = ref(false);
 
 // Verificar modo oscuro al iniciar
 onMounted(() => {
@@ -94,6 +98,29 @@ function handleSearch(query) {
   searchQuery.value = query;
 }
 
+// Función para iniciar checkout
+function startCheckout() {
+  isCheckoutActive.value = true;
+  closeSidebar();
+}
+
+// Función para finalizar checkout
+function finishCheckout(orderData) {
+  // Limpiar carrito
+  cartItems.value = [];
+  calculateTotal();
+  
+  // Cerrar checkout
+  isCheckoutActive.value = false;
+  
+  // Mostrar confirmación
+  toastMessage.value = "¡Pedido realizado con éxito!";
+  showToast.value = true;
+  setTimeout(() => {
+    showToast.value = false;
+  }, 3000);
+}
+
 // Proporcionar el estado y las funciones a los componentes hijos
 provide('cart', {
   items: cartItems,
@@ -107,6 +134,9 @@ provide('cart', {
 provide('search', {
   query: searchQuery
 });
+
+// Proporciona el servicio de autenticación a todos los componentes
+provide('auth', auth);
 </script>
 
 <template>
@@ -134,10 +164,23 @@ provide('search', {
     @close="closeSidebar"
     @update-item="updateCartItem"
     @remove-item="removeCartItem"
+    @checkout="startCheckout"
   />
 
   <!-- Componente Toast para notificaciones -->
   <Toast :show="showToast" :message="toastMessage" />
+
+  <!-- Añadir el formulario de checkout -->
+  <CheckoutForm 
+    v-if="isCheckoutActive"
+    :isCheckoutActive="isCheckoutActive"
+    :cartItems="cartItems"
+    @cancel="isCheckoutActive = false"
+    @order-completed="finishCheckout"
+  />
+
+  <!-- Modal de login que aparece cuando auth.state.showLoginModal es true -->
+  <Login v-if="auth.state.showLoginModal" />
 </template>
 
 <style>

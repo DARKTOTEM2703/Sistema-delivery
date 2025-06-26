@@ -31,7 +31,7 @@
         <span>Total:</span>
         <span class="total-price">${{ totalPrice.toFixed(2) }}</span>
       </div>
-      <button class="checkout-button" :disabled="cartItems.length === 0">
+      <button class="checkout-button" :disabled="cartItems.length === 0" @click="checkout">
         Completar Pedido
       </button>
     </div>
@@ -52,7 +52,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['close', 'update-item', 'remove-item']);
+const emit = defineEmits(['close', 'update-item', 'remove-item', 'checkout']);
 
 const totalPrice = computed(() => {
   return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -72,6 +72,10 @@ function decreaseQuantity(item) {
 
 function removeItem(item) {
   emit('remove-item', item);
+}
+
+function checkout() {
+  emit('checkout');
 }
 </script>
 

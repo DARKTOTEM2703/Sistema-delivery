@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 
 const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
+const auth = inject('auth'); // Inyectar el servicio de autenticación
+const showUserMenu = ref(false);
 
 defineProps({
   cartTotal: {
@@ -22,6 +24,15 @@ function toggleDarkMode() {
   localStorage.setItem('darkMode', isDarkMode.value);
 }
 
+function toggleUserMenu() {
+  showUserMenu.value = !showUserMenu.value;
+}
+
+function handleLogout() {
+  auth.logout();
+  showUserMenu.value = false;
+}
+
 // Aplicar tema oscuro al cargar si está guardado
 if (isDarkMode.value) {
   document.documentElement.classList.add('dark-mode');
@@ -38,6 +49,20 @@ if (isDarkMode.value) {
       </div>
       
       <div class="actions">
+        <!-- Usuario o botón de login -->
+        <div v-if="auth.isAuthenticated()" class="user-dropdown">
+          <button class="user-btn" @click="toggleUserMenu">
+            {{ auth.getUser().name }}
+            <span class="dropdown-icon">▼</span>
+          </button>
+          <div v-if="showUserMenu" class="dropdown-menu">
+            <a href="#" @click.prevent="handleLogout">Cerrar sesión</a>
+          </div>
+        </div>
+        <button v-else class="login-btn" @click="auth.showLoginModal()">
+          Iniciar sesión
+        </button>
+        
         <!-- Toggle para tema oscuro -->
         <button class="theme-toggle" @click="toggleDarkMode">
           {{ isDarkMode ? '🌙' : '☀️' }}
@@ -162,5 +187,62 @@ if (isDarkMode.value) {
 body {
   background-color: var(--background-color);
   color: var(--text-color);
+}
+
+/* Añade estos estilos para los elementos de usuario */
+.user-dropdown {
+  position: relative;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 5px;
+}
+
+.dropdown-icon {
+  font-size: 0.7rem;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem 0;
+  min-width: 150px;
+  box-shadow: var(--box-shadow);
+  z-index: 10;
+  margin-top: 0.5rem;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.login-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.login-btn:hover {
+  text-decoration: underline;
 }
 </style>
