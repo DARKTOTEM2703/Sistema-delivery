@@ -1,40 +1,31 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
-import AdminPanel from "../components/AdminPanel.vue";
+import Home from "../views/Home.vue";
+import RestaurantList from "../components/RestaurantList.vue";
+import RestaurantMenu from "../views/RestaurantMenu.vue";
 import ProfileView from "../views/ProfileView.vue";
-import OrdersHistory from "../views/OrdersHistory.vue";
-import OrderTracking from "../views/OrderTracking.vue";
 import auth from "../services/auth";
 
 const routes = [
   {
     path: "/",
     name: "home",
-    component: HomeView,
+    component: Home,
   },
   {
-    path: "/admin",
-    name: "admin",
-    component: AdminPanel,
-    meta: { requiresAuth: true, requiresAdmin: true },
+    path: "/restaurants",
+    name: "restaurants",
+    component: RestaurantList,
+  },
+  {
+    path: "/restaurant/:id",
+    name: "restaurant-menu",
+    component: RestaurantMenu,
   },
   {
     path: "/profile",
     name: "profile",
     component: ProfileView,
     meta: { requiresAuth: true },
-  },
-  {
-    path: "/orders",
-    name: "orders",
-    component: OrdersHistory,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/track/:orderId",
-    name: "track-order",
-    component: OrderTracking,
-    props: true,
   },
 ];
 

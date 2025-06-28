@@ -3,7 +3,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -15,70 +14,70 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customerInfo' => 'required',
-            'customerInfo.name' => 'required|string',
-            'customerInfo.address' => 'required|string',
-            'customerInfo.phone' => 'required|string',
-            'customerInfo.paymentMethod' => 'required|string',
-            'items' => 'required|array',
-            'items.*.id' => 'nullable|integer',
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
-            'total' => 'required|numeric',
+            'total' => 'required|numeric|min:0',
+            'address' => 'required|string',
+            'phone' => 'required|string',
+            'payment_method' => 'required|string',
         ]);
 
         DB::beginTransaction();
-
+        
         try {
+            // Crear la orden
             $order = Order::create([
-                'user_id' => Auth::id(), // Será null si el usuario no está autenticado
+                'user_id' => Auth::id(),
                 'total' => $validated['total'],
-                'status' => 'pending',
-                'address' => $validated['customerInfo']['address'],
-                'phone' => $validated['customerInfo']['phone'],
-                'payment_method' => $validated['customerInfo']['paymentMethod'],
-                'payment_status' => 'pending'
+                'address' => $validated['address'],
+                'phone' => $validated['phone'],
+                'payment_method' => $validated['payment_method'],
+                'status' => 'pending'
             ]);
 
+            // Crear los items de la orden
             foreach ($validated['items'] as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['id'],
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'subtotal' => $item['price'] * $item['quantity']
+                    'price' => $item['price']
                 ]);
             }
 
             DB::commit();
 
             return response()->json([
-                'success' => true,
-                'order_id' => $order->id,
-                'message' => 'Pedido creado correctamente'
+                'order' => $order->load('items.product'),
+                'message' => 'Pedido creado exitosamente'
             ], 201);
+
         } catch (\Exception $e) {
-            DB::rollBack();
+            DB::rollback();
             return response()->json([
-                'success' => false,
-                'message' => 'Error al crear el pedido: ' . $e->getMessage()
+                'error' => 'Error al crear el pedido'
             ], 500);
         }
     }
 
-    public function show($id)
-    {
-        $order = Order::with('items.product')->findOrFail($id);
-        return response()->json($order);
-    }
-
-    public function userOrders()
+    public function index(Request $request)
     {
         $orders = Order::with('items.product')
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return response()->json($orders);
+    }
+
+    public function show($id)
+    {
+        $order = Order::with('items.product')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        return response()->json($order);
     }
 }

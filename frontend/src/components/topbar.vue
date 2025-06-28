@@ -42,11 +42,19 @@ if (isDarkMode.value) {
 <template>
   <div class="topbar">
     <div class="container">
-      <!-- Logo y nombre del restaurante -->
+      <!-- Logo y navegación -->
       <div class="brand">
-        <h1 class="brand-name">Bella Vista</h1>
-        <span class="restaurant-badge">Restaurante</span>
+        <router-link to="/" class="brand-link">
+          <h1 class="brand-name">DeliveryApp</h1>
+          <span class="restaurant-badge">Multi-Restaurante</span>
+        </router-link>
       </div>
+
+      <!-- Navegación principal -->
+      <nav class="main-nav">
+        <router-link to="/" class="nav-link">Inicio</router-link>
+        <router-link to="/restaurants" class="nav-link">Restaurantes</router-link>
+      </nav>
       
       <div class="actions">
         <!-- Usuario o botón de login -->
@@ -56,6 +64,7 @@ if (isDarkMode.value) {
             <span class="dropdown-icon">▼</span>
           </button>
           <div v-if="showUserMenu" class="dropdown-menu">
+            <router-link to="/profile" @click="showUserMenu = false">Mi Perfil</router-link>
             <a href="#" @click.prevent="handleLogout">Cerrar sesión</a>
           </div>
         </div>
@@ -63,17 +72,15 @@ if (isDarkMode.value) {
           Iniciar sesión
         </button>
         
+        <!-- Carrito -->
+        <button class="cart-button" @click="handleCartClick">
+          <span class="cart-icon">🛒</span>
+          <span class="price">${{ cartTotal.toFixed(2) }}</span>
+        </button>
+        
         <!-- Toggle para tema oscuro -->
         <button class="theme-toggle" @click="toggleDarkMode">
           {{ isDarkMode ? '🌙' : '☀️' }}
-        </button>
-        
-        <!-- Carrito de compras como botón -->
-        <button class="cart-button" @click="handleCartClick">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="cart-icon" viewBox="0 0 16 16">
-            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-          </svg>
-          <span class="price">${{ cartTotal.toFixed(2) }}</span>
         </button>
       </div>
     </div>
@@ -244,5 +251,30 @@ body {
 
 .login-btn:hover {
   text-decoration: underline;
+}
+
+.main-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.router-link-active {
+  background: rgba(255, 123, 0, 0.1);
+  color: #ff7b00;
+}
+
+.brand-link {
+  text-decoration: none;
+  color: inherit;
 }
 </style>

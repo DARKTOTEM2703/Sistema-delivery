@@ -1,11 +1,8 @@
 <script setup>
 import { ref, provide, onMounted, watch } from 'vue';
 import topbar from './components/topbar.vue';
-import hero from './components/hero.vue';
-import ProductList from './components/ProductList.vue';
 import CartSidebar from './components/CartSidebar.vue';
 import Toast from './components/Toast.vue';
-import SearchBar from './components/SearchBar.vue';
 import CheckoutForm from './components/CheckoutForm.vue';
 import Login from './components/Login.vue';
 import auth from './services/auth';
@@ -16,7 +13,6 @@ const isSidebarOpen = ref(false);
 const cartTotal = ref(0);
 const showToast = ref(false);
 const toastMessage = ref('');
-const searchQuery = ref('');
 const isCheckoutActive = ref(false);
 
 // Verificar modo oscuro al iniciar
@@ -93,11 +89,6 @@ function closeSidebar() {
   isSidebarOpen.value = false;
 }
 
-// Manejar búsqueda
-function handleSearch(query) {
-  searchQuery.value = query;
-}
-
 // Función para iniciar checkout
 function startCheckout() {
   isCheckoutActive.value = true;
@@ -131,56 +122,57 @@ provide('cart', {
   openSidebar
 });
 
-provide('search', {
-  query: searchQuery
-});
-
 // Proporciona el servicio de autenticación a todos los componentes
 provide('auth', auth);
 </script>
 
 <template>
-  <topbar @open-cart="openSidebar" :cartTotal="cartTotal" />
-  <hero />
-  <main class="main-container">
-    <!-- Barra de búsqueda -->
-    <SearchBar @search="handleSearch" />
+  <div id="app">
+    <!-- Topbar siempre visible -->
+    <topbar @open-cart="openSidebar" :cartTotal="cartTotal" />
     
-    <ProductList 
-      @add-to-cart="addToCart" 
-      :searchQuery="searchQuery"
+    <!-- Router View - ESTO ES LO QUE FALTABA -->
+    <router-view v-slot="{ Component }">
+      <transition name="page" mode="out-in">
+        <component 
+          :is="Component" 
+          @add-to-cart="addToCart"
+        />
+      </transition>
+    </router-view>
+    
+    <!-- Overlay para sidebar -->
+    <div 
+      class="sidebar-overlay" 
+      :class="{ 'is-active': isSidebarOpen }"
+      @click="closeSidebar"
+    ></div>
+    
+    <!-- Sidebar del carrito -->
+    <CartSidebar 
+      :cartItems="cartItems" 
+      :isOpen="isSidebarOpen"
+      @close="closeSidebar"
+      @update-item="updateCartItem"
+      @remove-item="removeCartItem"
+      @checkout="startCheckout"
     />
-  </main>
-  
-  <div 
-    class="sidebar-overlay" 
-    :class="{ 'is-active': isSidebarOpen }"
-    @click="closeSidebar"
-  ></div>
-  
-  <CartSidebar 
-    :cartItems="cartItems" 
-    :isOpen="isSidebarOpen"
-    @close="closeSidebar"
-    @update-item="updateCartItem"
-    @remove-item="removeCartItem"
-    @checkout="startCheckout"
-  />
 
-  <!-- Componente Toast para notificaciones -->
-  <Toast :show="showToast" :message="toastMessage" />
+    <!-- Componente Toast para notificaciones -->
+    <Toast :show="showToast" :message="toastMessage" />
 
-  <!-- Añadir el formulario de checkout -->
-  <CheckoutForm 
-    v-if="isCheckoutActive"
-    :isCheckoutActive="isCheckoutActive"
-    :cartItems="cartItems"
-    @cancel="isCheckoutActive = false"
-    @order-completed="finishCheckout"
-  />
+    <!-- Formulario de checkout -->
+    <CheckoutForm 
+      v-if="isCheckoutActive"
+      :isCheckoutActive="isCheckoutActive"
+      :cartItems="cartItems"
+      @cancel="isCheckoutActive = false"
+      @order-completed="finishCheckout"
+    />
 
-  <!-- Modal de login que aparece cuando auth.state.showLoginModal es true -->
-  <Login v-if="auth.state.showLoginModal" />
+    <!-- Modal de login -->
+    <Login v-if="auth.state.showLoginModal" />
+  </div>
 </template>
 
 <style>
@@ -218,10 +210,17 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-.main-container {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 15px;
+#app {
+  min-height: 100vh;
+}
+
+/* Transiciones de página */
+.page-enter-active, .page-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.page-enter-from, .page-leave-to {
+  opacity: 0;
 }
 
 /* Overlay para cuando el sidebar está abierto */
