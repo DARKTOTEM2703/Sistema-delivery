@@ -17,17 +17,55 @@ class Product extends Model
         'category',
         'rating',
         'time',
-        'servings'
+        'servings',
+        'restaurant_id',
+        'is_available',
+        'preparation_time',
+        'allergens'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'rating' => 'decimal:1'
+        'rating' => 'decimal:1',
+        'is_available' => 'boolean',
+        'preparation_time' => 'integer'
     ];
 
-    // Relación con los items de pedido
+    // Relaciones
+    public function restaurant()
+    {
+        return $this->belongsTo(Restaurant::class);
+    }
+
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    // Scopes
+    public function scopeAvailable($query)
+    {
+        return $query->where('is_available', true);
+    }
+
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
+
+    public function scopeByRestaurant($query, $restaurantId)
+    {
+        return $query->where('restaurant_id', $restaurantId);
+    }
+
+    // Métodos útiles
+    public function isAvailable()
+    {
+        return $this->is_available && $this->restaurant->is_active;
+    }
+
+    public function getAllergensList()
+    {
+        return $this->allergens ? explode(',', $this->allergens) : [];
     }
 }

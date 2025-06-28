@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -24,7 +24,8 @@ class User extends Authenticatable
         'phone',
         'address',
         'avatar',
-        'is_active'
+        'is_active',
+        'last_login_at'
     ];
 
     /**
@@ -65,114 +66,94 @@ class User extends Authenticatable
         return $this->hasMany(Restaurant::class, 'owner_id');
     }
 
-    public function employeeRestaurants()
-    {
-        return $this->belongsToMany(Restaurant::class, 'user_roles')
-                    ->withPivot(['role_id', 'is_active', 'assigned_at']);
-    }
-
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
-    public function deliveries()
-    {
-        return $this->hasMany(Order::class, 'delivery_person_id');
-    }
-
-    public function employeeSettings()
-    {
-        return $this->hasMany(EmployeeSetting::class);
-    }
-
-    // Métodos de roles y permisos
+    // Métodos de roles y permisos con manejo de errores
     public function hasRole($roleName, $restaurantId = null)
     {
-        return $this->roles()
-                   ->where('name', $roleName)
-                   ->when($restaurantId, function($query, $restaurantId) {
-                       return $query->wherePivot('restaurant_id', $restaurantId);
-                   })
-                   ->wherePivot('is_active', true)
-                   ->exists();
-    }
-
-    public function hasPermission($permission, $restaurantId = null)
-    {
-        $roles = $this->roles()
-                     ->when($restaurantId, function($query, $restaurantId) {
-                         return $query->wherePivot('restaurant_id', $restaurantId);
-                     })
-                     ->wherePivot('is_active', true)
-                     ->get();
-
-        foreach ($roles as $role) {
-            if (in_array('*', $role->permissions) || in_array($permission, $role->permissions)) {
-                return true;
-            }
+        try {
+            return $this->roles()
+                       ->where('name', $roleName)
+                       ->when($restaurantId, function($query, $restaurantId) {
+                           return $query->wherePivot('restaurant_id', $restaurantId);
+                       })
+                       ->wherePivot('is_active', true)
+                       ->exists();
+        } catch (\Exception $e) {
+            \Log::error('Error verificando rol: ' . $e->getMessage());
+            return false;
         }
-
-        return false;
     }
 
     public function assignRole($roleName, $restaurantId = null)
     {
-        $role = Role::where('name', $roleName)->first();
+        try {
+            // Verificar si existe la tabla roles
+            if (!\Schema::hasTable('roles')) {
+                \Log::warning('Tabla roles no existe, omitiendo asignación de rol');
+                return;
+            }
 
-        if (!$role) {
-            throw new \Exception("Role {$roleName} not found");
+            $role = Role::where('name', $roleName)->first();
+            
+            if (!$role) {
+                \Log::warning("Rol '{$roleName}' no encontrado");
+                return;
+            }
+
+            // Verificar si ya tiene el rol
+            $existingRole = $this->roles()
+                ->where('role_id', $role->id)
+                ->when($restaurantId, function($query, $restaurantId) {
+                    return $query->wherePivot('restaurant_id', $restaurantId);
+                })
+                ->first();
+
+            if ($existingRole) {
+                // Reactivar si está inactivo
+                if (!$existingRole->pivot->is_active) {
+                    $this->roles()->updateExistingPivot($role->id, [
+                        'is_active' => true,
+                        'assigned_at' => now()
+                    ]);
+                }
+                return;
+            }
+
+            // Asignar nuevo rol
+            $this->roles()->attach($role->id, [
+                'restaurant_id' => $restaurantId,
+                'is_active' => true,
+                'assigned_at' => now()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error asignando rol: ' . $e->getMessage());
         }
-
-        return $this->roles()->attach($role->id, [
-            'restaurant_id' => $restaurantId,
-            'is_active' => true,
-            'assigned_at' => now()
-        ]);
-    }
-
-    public function removeRole($roleName, $restaurantId = null)
-    {
-        $role = Role::where('name', $roleName)->first();
-
-        if (!$role) {
-            return false;
-        }
-
-        return $this->roles()
-                   ->wherePivot('role_id', $role->id)
-                   ->when($restaurantId, function($query, $restaurantId) {
-                       return $query->wherePivot('restaurant_id', $restaurantId);
-                   })
-                   ->detach();
-    }
-
-    public function getRolesForRestaurant($restaurantId)
-    {
-        return $this->roles()
-                   ->wherePivot('restaurant_id', $restaurantId)
-                   ->wherePivot('is_active', true)
-                   ->get();
     }
 
     public function isSuperAdmin()
     {
-        return $this->hasRole('super_admin');
+        try {
+            return $this->hasRole('super_admin');
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     public function isOwner($restaurantId = null)
     {
-        if ($restaurantId) {
-            return $this->hasRole('owner', $restaurantId);
+        try {
+            if ($restaurantId) {
+                return $this->hasRole('owner', $restaurantId);
+            }
+
+            return $this->ownedRestaurants()->exists();
+        } catch (\Exception $e) {
+            return false;
         }
-
-        return $this->ownedRestaurants()->exists();
-    }
-
-    public function canAccessRestaurant($restaurantId)
-    {
-        return $this->isSuperAdmin() ||
-               $this->isOwner($restaurantId) ||
-               $this->employeeRestaurants()->where('id', $restaurantId)->exists();
     }
 }

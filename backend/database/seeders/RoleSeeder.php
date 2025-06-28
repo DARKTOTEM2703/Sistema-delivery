@@ -1,48 +1,28 @@
 <?php
 
-namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+namespace Database\Seeders;
 
-class Role extends Model
+use Illuminate\Database\Seeder;
+use App\Models\Role;
+
+class RoleSeeder extends Seeder
 {
-    use HasFactory;
-
-    protected $fillable = [
-        'name',
-        'display_name',
-        'description',
-        'permissions'
-    ];
-
-    protected $casts = [
-        'permissions' => 'array'
-    ];
-
-    public function users()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
-        return $this->belongsToMany(User::class, 'user_roles')
-            ->withPivot(['restaurant_id', 'is_active', 'assigned_at'])
-            ->withTimestamps();
-    }
-
-    public function hasPermission($permission)
-    {
-        return in_array($permission, $this->permissions);
-    }
-
-    // Roles predefinidos
-    public static function getSystemRoles()
-    {
-        return [
-            'super_admin' => [
+        $roles = [
+            [
+                'name' => 'super_admin',
                 'display_name' => 'Super Administrador',
-                'description' => 'Control total del sistema',
+                'description' => 'Administrador de la plataforma',
                 'permissions' => ['*'] // Todos los permisos
             ],
-            'owner' => [
-                'display_name' => 'Dueño del Restaurante',
+            [
+                'name' => 'owner',
+                'display_name' => 'Propietario',
                 'description' => 'Propietario y administrador del restaurante',
                 'permissions' => [
                     'restaurant.manage',
@@ -53,7 +33,8 @@ class Role extends Model
                     'settings.manage'
                 ]
             ],
-            'manager' => [
+            [
+                'name' => 'manager',
                 'display_name' => 'Gerente',
                 'description' => 'Administra operaciones diarias',
                 'permissions' => [
@@ -64,7 +45,8 @@ class Role extends Model
                     'menu.edit'
                 ]
             ],
-            'cook' => [
+            [
+                'name' => 'cook',
                 'display_name' => 'Cocinero',
                 'description' => 'Prepara pedidos en cocina',
                 'permissions' => [
@@ -73,7 +55,8 @@ class Role extends Model
                     'menu.view'
                 ]
             ],
-            'delivery' => [
+            [
+                'name' => 'delivery',
                 'display_name' => 'Repartidor',
                 'description' => 'Entrega pedidos a domicilio',
                 'permissions' => [
@@ -82,7 +65,8 @@ class Role extends Model
                     'orders.complete'
                 ]
             ],
-            'waiter' => [
+            [
+                'name' => 'waiter',
                 'display_name' => 'Mesero/Atención',
                 'description' => 'Atiende clientes y toma pedidos',
                 'permissions' => [
@@ -92,7 +76,8 @@ class Role extends Model
                     'menu.view'
                 ]
             ],
-            'customer' => [
+            [
+                'name' => 'customer',
                 'display_name' => 'Cliente',
                 'description' => 'Usuario final del sistema',
                 'permissions' => [
@@ -103,5 +88,12 @@ class Role extends Model
                 ]
             ]
         ];
+
+        foreach ($roles as $roleData) {
+            Role::updateOrCreate(
+                ['name' => $roleData['name']],
+                $roleData
+            );
+        }
     }
 }

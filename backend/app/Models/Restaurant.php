@@ -4,19 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Restaurant extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
-        'name', 'description', 'slug', 'logo', 'cover_image', 
-        'address', 'phone', 'email', 'category', 'delivery_fee',
-        'delivery_time_min', 'delivery_time_max', 'minimum_order', 
-        'rating', 'total_reviews', 'is_active', 'accepts_cash', 
-        'accepts_card', 'business_hours', 'delivery_zones', 
-        'latitude', 'longitude', 'owner_id'
+        'name',
+        'description',
+        'slug',
+        'logo',
+        'cover_image',
+        'address',
+        'phone',
+        'email',
+        'category',
+        'delivery_fee',
+        'delivery_time_min',
+        'delivery_time_max',
+        'minimum_order',
+        'rating',
+        'total_reviews',
+        'is_active',
+        'accepts_cash',
+        'accepts_card',
+        'business_hours',
+        'delivery_zones',
+        'latitude',
+        'longitude',
+        'owner_id'
     ];
 
     protected $casts = [
@@ -25,6 +41,8 @@ class Restaurant extends Model
         'is_active' => 'boolean',
         'accepts_cash' => 'boolean',
         'accepts_card' => 'boolean',
+        'delivery_fee' => 'decimal:2',
+        'minimum_order' => 'decimal:2',
         'rating' => 'decimal:1',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8'
@@ -97,6 +115,7 @@ class Restaurant extends Model
         return ($this->delivery_time_min + $this->delivery_time_max) / 2;
     }
 
+    // MÉTODOS FALTANTES PARA EL DASHBOARD
     public function getTodayOrders()
     {
         return $this->orders()->whereDate('created_at', today())->count();
@@ -108,6 +127,79 @@ class Restaurant extends Model
                    ->whereDate('created_at', today())
                    ->where('status', 'completed')
                    ->sum('total');
+    }
+
+    public function getWeeklyOrders()
+    {
+        return $this->orders()
+                   ->whereBetween('created_at', [
+                       now()->startOfWeek(),
+                       now()->endOfWeek()
+                   ])
+                   ->count();
+    }
+
+    public function getWeeklyRevenue()
+    {
+        return $this->orders()
+                   ->whereBetween('created_at', [
+                       now()->startOfWeek(),
+                       now()->endOfWeek()
+                   ])
+                   ->where('status', 'completed')
+                   ->sum('total');
+    }
+
+    public function getMonthlyOrders()
+    {
+        return $this->orders()
+                   ->whereMonth('created_at', now()->month)
+                   ->whereYear('created_at', now()->year)
+                   ->count();
+    }
+
+    public function getMonthlyRevenue()
+    {
+        return $this->orders()
+                   ->whereMonth('created_at', now()->month)
+                   ->whereYear('created_at', now()->year)
+                   ->where('status', 'completed')
+                   ->sum('total');
+    }
+
+    public function getAverageOrderValue()
+    {
+        return $this->orders()
+                   ->where('status', 'completed')
+                   ->avg('total') ?? 0;
+    }
+
+    public function getPopularProducts($limit = 5)
+    {
+        return $this->products()
+                   ->withCount(['orderItems as total_ordered' => function($query) {
+                       $query->selectRaw('sum(quantity)');
+                   }])
+                   ->orderBy('total_ordered', 'desc')
+                   ->limit($limit)
+                   ->get();
+    }
+
+    public function getRecentOrders($limit = 10)
+    {
+        return $this->orders()
+                   ->with(['user', 'items.product'])
+                   ->orderBy('created_at', 'desc')
+                   ->limit($limit)
+                   ->get();
+    }
+
+    public function getOrdersByStatus()
+    {
+        return $this->orders()
+                   ->selectRaw('status, count(*) as count')
+                   ->groupBy('status')
+                   ->pluck('count', 'status');
     }
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
@@ -122,5 +214,28 @@ class Restaurant extends Model
         $c = 2 * atan2(sqrt($a), sqrt(1-$a));
         
         return $earthRadius * $c;
+    }
+
+    // Scopes útiles
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
+
+    public function scopeOpenNow($query)
+    {
+        // Este scope necesita lógica más compleja para ser usado en queries
+        return $query->where('is_active', true);
+    }
+
+    public function scopeWithinDeliveryRange($query, $latitude, $longitude)
+    {
+        // Implementar lógica de geolocalización si es necesario
+        return $query;
     }
 }

@@ -35,7 +35,7 @@ class AuthController extends Controller
         // Asignar rol (por defecto customer)
         $roleName = $request->role ?? 'customer';
         $restaurantId = $request->restaurant_id;
-        
+
         // Validar que si es un rol de empleado, se especifique el restaurante
         if (in_array($roleName, ['owner', 'manager', 'cook', 'delivery', 'waiter']) && !$restaurantId) {
             return response()->json([
@@ -68,7 +68,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
-        
+
         if (!$user->is_active) {
             throw ValidationException::withMessages([
                 'email' => ['Tu cuenta está desactivada. Contacta al administrador.'],
