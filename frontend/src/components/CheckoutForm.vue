@@ -22,11 +22,13 @@
       <div class="form-group">
         <label for="address">Dirección de entrega</label>
         <input type="text" id="address" v-model="formData.address" required>
+        <div class="error-message" v-if="errors.address">{{ errors.address }}</div>
       </div>
       
       <div class="form-group">
         <label for="phone">Teléfono</label>
         <input type="tel" id="phone" v-model="formData.phone" required>
+        <div class="error-message" v-if="errors.phone">{{ errors.phone }}</div>
       </div>
       
       <div class="form-group">
@@ -36,9 +38,13 @@
           <option value="tarjeta">Tarjeta al entregar</option>
           <option value="online">Pago online</option>
         </select>
+        <div class="error-message" v-if="errors.paymentMethod">{{ errors.paymentMethod }}</div>
       </div>
       
-      <div class="error-message" v-if="error">{{ error }}</div>
+      <div class="form-group">
+        <label for="specialInstructions">Instrucciones especiales</label>
+        <textarea id="specialInstructions" v-model="formData.special_instructions" rows="3"></textarea>
+      </div>
       
       <div class="actions">
         <button class="cancel-btn" @click="$emit('cancel')">Cancelar</button>
@@ -53,7 +59,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import api from '../services/api';
+import { useNotifications } from '@/services/useNotifications';
 
 const props = defineProps({
   isCheckoutActive: Boolean,
@@ -62,30 +68,76 @@ const props = defineProps({
 
 const emit = defineEmits(['cancel', 'order-completed']);
 
+const { error: showError, success } = useNotifications();
+
 const formData = ref({
   name: '',
   address: '',
   phone: '',
-  paymentMethod: 'efectivo'
+  paymentMethod: 'efectivo',
+  special_instructions: ''
 });
 
+const errors = ref({});
 const isSubmitting = ref(false);
-const error = ref('');
 
 const orderTotal = computed(() => {
   return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 });
 
-async function submitOrder() {
-  if (!validateForm()) {
-    return;
+const isValid = computed(() => {
+  return formData.value.address.trim().length >= 10 &&
+         isValidPhone(formData.value.phone) &&
+         formData.value.paymentMethod;
+});
+
+function isValidPhone(phone) {
+  const cleanPhone = phone.replace(/\D/g, '');
+  return cleanPhone.length >= 8 && cleanPhone.length <= 15;
+}
+
+function validateForm() {
+  errors.value = {};
+  
+  if (!formData.value.name.trim()) {
+    errors.value.name = 'Por favor ingresa tu nombre';
   }
   
+  if (!formData.value.address.trim()) {
+    errors.value.address = 'La dirección es requerida';
+  } else if (formData.value.address.trim().length < 10) {
+    errors.value.address = 'La dirección debe tener al menos 10 caracteres';
+  }
+  
+  if (!formData.value.phone.trim()) {
+    errors.value.phone = 'El teléfono es requerido';
+  } else if (!isValidPhone(formData.value.phone)) {
+    errors.value.phone = 'Formato de teléfono inválido';
+  }
+  
+  if (!formData.value.paymentMethod) {
+    errors.value.paymentMethod = 'Selecciona un método de pago';
+  }
+  
+  if (props.cartItems.length === 0) {
+    errors.value.cart = 'Tu carrito está vacío';
+  }
+  
+  return Object.keys(errors.value).length === 0;
+}
+
+async function submitOrder() {
+  if (!validateForm() || isSubmitting.value) return;
+  
   isSubmitting.value = true;
-  error.value = '';
   
   try {
+    // ✅ OBTENER restaurant_id del primer item del carrito
+    const firstItem = props.cartItems[0];
+    const restaurantId = firstItem?.restaurant_id || 1; // Fallback a 1
+    
     const orderData = {
+      restaurant_id: restaurantId, // ✅ AGREGAR ESTA LÍNEA
       items: props.cartItems.map(item => ({
         id: item.id,
         quantity: item.quantity,
@@ -94,7 +146,8 @@ async function submitOrder() {
       total: orderTotal.value,
       address: formData.value.address,
       phone: formData.value.phone,
-      payment_method: formData.value.paymentMethod
+      payment_method: formData.value.paymentMethod,
+      special_instructions: formData.value.special_instructions
     };
     
     console.log('📤 Enviando pedido:', orderData);
@@ -109,44 +162,23 @@ async function submitOrder() {
       orderDate: new Date().toISOString()
     });
     
+    success('Pedido enviado correctamente');
+    
     // Limpiar formulario
     formData.value = {
       name: '',
       address: '',
       phone: '',
-      paymentMethod: 'efectivo'
+      paymentMethod: 'efectivo',
+      special_instructions: ''
     };
     
   } catch (err) {
     console.error('❌ Error al procesar el pedido:', err);
-    error.value = err.response?.data?.message || 'Error al procesar el pedido. Intenta nuevamente.';
+    showError('Error al procesar el pedido: ' + (err.response?.data?.message || err.message));
   } finally {
     isSubmitting.value = false;
   }
-}
-
-function validateForm() {
-  if (!formData.value.name.trim()) {
-    error.value = 'Por favor ingresa tu nombre';
-    return false;
-  }
-  
-  if (!formData.value.address.trim()) {
-    error.value = 'Por favor ingresa tu dirección';
-    return false;
-  }
-  
-  if (!formData.value.phone.trim()) {
-    error.value = 'Por favor ingresa tu teléfono';
-    return false;
-  }
-  
-  if (props.cartItems.length === 0) {
-    error.value = 'Tu carrito está vacío';
-    return false;
-  }
-  
-  return true;
 }
 </script>
 
@@ -218,7 +250,7 @@ label {
   color: var(--text-color);
 }
 
-input, select {
+input, select, textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--border-color);
@@ -228,13 +260,14 @@ input, select {
   box-sizing: border-box;
 }
 
+textarea {
+  resize: vertical;
+}
+
 .error-message {
   color: #ff4d4f;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background: rgba(255, 77, 79, 0.1);
-  border-radius: 4px;
-  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
 }
 
 .actions {

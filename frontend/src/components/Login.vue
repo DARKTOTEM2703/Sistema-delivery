@@ -130,7 +130,7 @@ async function handleSubmit() {
     } else {
       console.log('🔑 Iniciando login...');
       await auth.login({
-        email: formData.value.email,
+        email: formData.value.email,        // ✅ AGREGAR EMAIL
         password: formData.value.password
       });
       success.value = '¡Login exitoso! Bienvenido/a de vuelta.';

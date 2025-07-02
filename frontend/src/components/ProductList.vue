@@ -369,4 +369,78 @@ function handleAddToCart(product) {
   box-shadow: var(--box-shadow);
   background: var(--button-hover);
 }
+
+/* Estilos para el componente FoodCategories */
+.categories-section {
+  margin-bottom: 2rem;
+}
+
+.categories-title {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.categories-container {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  scrollbar-width: thin;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.category-btn:hover {
+  background: var(--button-hover);
+  transform: translateY(-2px);
+}
+
+.category-btn.active {
+  background: var(--button-primary);
+  border-color: var(--button-primary);
+  color: white;
+}
+
+.category-icon {
+  font-size: 2rem;
+}
+
+.category-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .categories-container {
+    gap: 0.5rem;
+  }
+  
+  .category-btn {
+    min-width: 80px;
+    padding: 0.75rem;
+  }
+  
+  .category-icon {
+    font-size: 1.5rem;
+  }
+  
+  .category-name {
+    font-size: 0.8rem;
+  }
+}
 </style>

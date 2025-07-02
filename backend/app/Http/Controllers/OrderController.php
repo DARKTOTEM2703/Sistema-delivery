@@ -14,6 +14,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'restaurant_id' => 'required|exists:restaurants,id',
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -25,11 +26,12 @@ class OrderController extends Controller
         ]);
 
         DB::beginTransaction();
-        
+
         try {
             // Crear la orden
             $order = Order::create([
                 'user_id' => Auth::id(),
+                'restaurant_id' => $validated['restaurant_id'],  // ✅ AGREGAR
                 'total' => $validated['total'],
                 'address' => $validated['address'],
                 'phone' => $validated['phone'],
@@ -43,7 +45,8 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'product_id' => $item['id'],
                     'quantity' => $item['quantity'],
-                    'price' => $item['price']
+                    'price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['quantity']  // ✅ AGREGAR
                 ]);
             }
 
@@ -53,7 +56,6 @@ class OrderController extends Controller
                 'order' => $order->load('items.product'),
                 'message' => 'Pedido creado exitosamente'
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([

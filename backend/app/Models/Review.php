@@ -14,17 +14,27 @@ class Review extends Model
         'restaurant_id',
         'order_id',
         'rating',
+        'food_rating',
+        'service_rating',
+        'delivery_rating',
         'comment',
         'is_anonymous',
         'response',
-        'responded_at'
+        'responded_at',
+        'images'
     ];
 
     protected $casts = [
         'rating' => 'integer',
+        'food_rating' => 'integer',
+        'service_rating' => 'integer',
+        'delivery_rating' => 'integer',
         'is_anonymous' => 'boolean',
-        'responded_at' => 'datetime'
+        'responded_at' => 'datetime',
+        'images' => 'array'
     ];
+
+    protected $appends = ['helpful_count', 'not_helpful_count'];
 
     // Relaciones
     public function user()
@@ -42,25 +52,74 @@ class Review extends Model
         return $this->belongsTo(Order::class);
     }
 
-    // Scopes
-    public function scopePublished($query)
+    public function helpfulVotes()
     {
-        return $query->whereNotNull('comment');
+        return $this->hasMany(ReviewVote::class)->where('is_helpful', true);
     }
 
-    public function scopeByRating($query, $rating)
+    public function notHelpfulVotes()
     {
-        return $query->where('rating', $rating);
+        return $this->hasMany(ReviewVote::class)->where('is_helpful', false);
+    }
+
+    // Accessors
+    public function getHelpfulCountAttribute()
+    {
+        return $this->helpfulVotes()->count();
+    }
+
+    public function getNotHelpfulCountAttribute()
+    {
+        return $this->notHelpfulVotes()->count();
+    }
+
+    public function getDisplayNameAttribute()
+    {
+        return $this->is_anonymous ? 'Usuario Anónimo' : $this->user->name;
+    }
+
+    public function getDisplayAvatarAttribute()
+    {
+        return $this->is_anonymous ? null : $this->user->avatar;
     }
 
     // Métodos útiles
-    public function getDisplayNameAttribute()
-    {
-        return $this->is_anonymous ? 'Usuario anónimo' : $this->user->name;
-    }
-
     public function hasResponse()
     {
-        return !is_null($this->response);
+        return !empty($this->response);
+    }
+
+    public function getAverageRating()
+    {
+        $ratings = array_filter([
+            $this->food_rating,
+            $this->service_rating,
+            $this->delivery_rating
+        ]);
+
+        return count($ratings) > 0 ? array_sum($ratings) / count($ratings) : $this->rating;
+    }
+}
+
+class ReviewVote extends Model
+{
+    protected $fillable = [
+        'review_id',
+        'user_id',
+        'is_helpful'
+    ];
+
+    protected $casts = [
+        'is_helpful' => 'boolean'
+    ];
+
+    public function review()
+    {
+        return $this->belongsTo(Review::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

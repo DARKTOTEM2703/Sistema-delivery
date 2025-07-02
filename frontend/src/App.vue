@@ -6,13 +6,15 @@ import Toast from './components/Toast.vue';
 import CheckoutForm from './components/CheckoutForm.vue';
 import Login from './components/Login.vue';
 import auth from './services/auth';
+import { useNotifications } from './services/useNotifications';
+
+// Sistema de notificaciones
+const { notifications, success: showSuccess, error: showError } = useNotifications();
 
 // Estado del carrito
 const cartItems = ref([]);
 const isSidebarOpen = ref(false);
 const cartTotal = ref(0);
-const showToast = ref(false);
-const toastMessage = ref('');
 const isCheckoutActive = ref(false);
 
 // Verificar modo oscuro al iniciar
@@ -56,12 +58,8 @@ function addToCart(product) {
   
   calculateTotal();
   
-  // Mostrar notificación
-  toastMessage.value = `${product.name} añadido al carrito`;
-  showToast.value = true;
-  setTimeout(() => {
-    showToast.value = false;
-  }, 3000);
+  // Usar el sistema de notificaciones
+  showSuccess(`${product.name} añadido al carrito`);
 }
 
 // Actualizar un item en el carrito
@@ -105,11 +103,7 @@ function finishCheckout(orderData) {
   isCheckoutActive.value = false;
   
   // Mostrar confirmación
-  toastMessage.value = "¡Pedido realizado con éxito!";
-  showToast.value = true;
-  setTimeout(() => {
-    showToast.value = false;
-  }, 3000);
+  showSuccess("¡Pedido realizado con éxito!");
 }
 
 // Proporcionar el estado y las funciones a los componentes hijos
@@ -159,7 +153,7 @@ provide('auth', auth);
     />
 
     <!-- Componente Toast para notificaciones -->
-    <Toast :show="showToast" :message="toastMessage" />
+    <Toast />
 
     <!-- Formulario de checkout -->
     <CheckoutForm 

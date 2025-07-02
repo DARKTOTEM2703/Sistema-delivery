@@ -192,7 +192,18 @@ export default {
 
   // Pedidos (YA FUNCIONA)
   async createOrder(orderData) {
-    return await api.post("/orders", orderData);
+    // ✅ ASEGURAR QUE orderData incluya restaurant_id
+    const requiredData = {
+      restaurant_id: orderData.restaurant_id, // ✅ AGREGAR
+      items: orderData.items,
+      total: orderData.total,
+      address: orderData.address,
+      phone: orderData.phone,
+      payment_method: orderData.payment_method,
+      ...orderData,
+    };
+
+    return await api.post("/orders", requiredData);
   },
 
   // Roles (PREPARADO PARA EL FUTURO)

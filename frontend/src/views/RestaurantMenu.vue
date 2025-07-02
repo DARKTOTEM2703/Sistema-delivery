@@ -5,6 +5,10 @@
       🔄 Cargando restaurante...
     </div>
     
+    <div v-else-if="error" class="error-state">
+      {{ error }}
+    </div>
+    
     <div v-else-if="restaurant" class="restaurant-detail">
       <!-- Header del restaurante -->
       <div class="restaurant-header">
@@ -87,6 +91,7 @@ const { addToCart } = inject('cart');
 const restaurant = ref(null);
 const products = ref([]);
 const loading = ref(true);
+const error = ref(null);
 const searchQuery = ref('');
 
 // Productos de fallback para el restaurante

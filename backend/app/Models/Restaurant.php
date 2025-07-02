@@ -67,9 +67,9 @@ class Restaurant extends Model
     public function employees()
     {
         return $this->belongsToMany(User::class, 'user_roles')
-                    ->wherePivot('restaurant_id', $this->id)
-                    ->withPivot(['role_id', 'is_active', 'assigned_at'])
-                    ->withTimestamps();
+            ->wherePivot('restaurant_id', $this->id)
+            ->withPivot(['role_id', 'is_active', 'assigned_at'])
+            ->withTimestamps();
     }
 
     public function reviews()
@@ -83,13 +83,13 @@ class Restaurant extends Model
         $now = now();
         $dayOfWeek = strtolower($now->format('l'));
         $currentTime = $now->format('H:i');
-        
+
         $hours = $this->business_hours[$dayOfWeek] ?? null;
-        
+
         if (!$hours || !$hours['is_open']) {
             return false;
         }
-        
+
         return $currentTime >= $hours['open'] && $currentTime <= $hours['close'];
     }
 
@@ -98,15 +98,17 @@ class Restaurant extends Model
         // Lógica para verificar si entrega a esa ubicación
         foreach ($this->delivery_zones as $zone) {
             $distance = $this->calculateDistance(
-                $this->latitude, $this->longitude,
-                $latitude, $longitude
+                $this->latitude,
+                $this->longitude,
+                $latitude,
+                $longitude
             );
-            
+
             if ($distance <= $zone['radius']) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -124,95 +126,95 @@ class Restaurant extends Model
     public function getTodayRevenue()
     {
         return $this->orders()
-                   ->whereDate('created_at', today())
-                   ->where('status', 'completed')
-                   ->sum('total');
+            ->whereDate('created_at', today())
+            ->where('status', 'completed')
+            ->sum('total');
     }
 
     public function getWeeklyOrders()
     {
         return $this->orders()
-                   ->whereBetween('created_at', [
-                       now()->startOfWeek(),
-                       now()->endOfWeek()
-                   ])
-                   ->count();
+            ->whereBetween('created_at', [
+                now()->startOfWeek(),
+                now()->endOfWeek()
+            ])
+            ->count();
     }
 
     public function getWeeklyRevenue()
     {
         return $this->orders()
-                   ->whereBetween('created_at', [
-                       now()->startOfWeek(),
-                       now()->endOfWeek()
-                   ])
-                   ->where('status', 'completed')
-                   ->sum('total');
+            ->whereBetween('created_at', [
+                now()->startOfWeek(),
+                now()->endOfWeek()
+            ])
+            ->where('status', 'completed')
+            ->sum('total');
     }
 
     public function getMonthlyOrders()
     {
         return $this->orders()
-                   ->whereMonth('created_at', now()->month)
-                   ->whereYear('created_at', now()->year)
-                   ->count();
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
     }
 
     public function getMonthlyRevenue()
     {
         return $this->orders()
-                   ->whereMonth('created_at', now()->month)
-                   ->whereYear('created_at', now()->year)
-                   ->where('status', 'completed')
-                   ->sum('total');
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->where('status', 'completed')
+            ->sum('total');
     }
 
     public function getAverageOrderValue()
     {
         return $this->orders()
-                   ->where('status', 'completed')
-                   ->avg('total') ?? 0;
+            ->where('status', 'completed')
+            ->avg('total') ?? 0;
     }
 
     public function getPopularProducts($limit = 5)
     {
         return $this->products()
-                   ->withCount(['orderItems as total_ordered' => function($query) {
-                       $query->selectRaw('sum(quantity)');
-                   }])
-                   ->orderBy('total_ordered', 'desc')
-                   ->limit($limit)
-                   ->get();
+            ->withCount(['orderItems as total_ordered' => function ($query) {
+                $query->selectRaw('sum(quantity)');
+            }])
+            ->orderBy('total_ordered', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     public function getRecentOrders($limit = 10)
     {
         return $this->orders()
-                   ->with(['user', 'items.product'])
-                   ->orderBy('created_at', 'desc')
-                   ->limit($limit)
-                   ->get();
+            ->with(['user', 'items.product'])
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     public function getOrdersByStatus()
     {
         return $this->orders()
-                   ->selectRaw('status, count(*) as count')
-                   ->groupBy('status')
-                   ->pluck('count', 'status');
+            ->selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
     }
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
         // Fórmula de Haversine para calcular distancia
         $earthRadius = 6371; // Radio de la Tierra en km
-        
+
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
-        
-        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/2) * sin($dLon/2);
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        
+
+        $a = sin($dLat / 2) * sin($dLat / 2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) * sin($dLon / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
         return $earthRadius * $c;
     }
 

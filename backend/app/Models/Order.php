@@ -65,6 +65,11 @@ class Order extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+
     // Scopes
     public function scopePending($query)
     {

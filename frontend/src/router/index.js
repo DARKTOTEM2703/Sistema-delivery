@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
 import RestaurantList from "../components/RestaurantList.vue";
-import RestaurantMenu from "../views/RestaurantMenu.vue";
 import ProfileView from "../views/ProfileView.vue";
 import auth from "../services/auth";
 
@@ -18,8 +17,8 @@ const routes = [
   },
   {
     path: "/restaurant/:id",
-    name: "restaurant-menu",
-    component: RestaurantMenu,
+    name: "RestaurantMenu",
+    component: () => import("@/views/RestaurantMenu.vue"),
   },
   {
     path: "/profile",
