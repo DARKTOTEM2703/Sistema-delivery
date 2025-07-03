@@ -3,6 +3,8 @@ import Home from "../views/Home.vue";
 import RestaurantList from "../components/RestaurantList.vue";
 import ProfileView from "../views/ProfileView.vue";
 import auth from "../services/auth";
+import CreateRestaurant from "@/views/CreateRestaurant.vue";
+import OwnerDashboard from "@/views/OwnerDashboard.vue";
 
 const routes = [
   {
@@ -25,6 +27,19 @@ const routes = [
     name: "profile",
     component: ProfileView,
     meta: { requiresAuth: true },
+  },
+  // Rutas para propietarios
+  {
+    path: "/create-restaurant",
+    name: "CreateRestaurant",
+    component: CreateRestaurant,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/owner/dashboard/:id",
+    name: "OwnerDashboard",
+    component: OwnerDashboard,
+    meta: { requiresAuth: true, requiresRole: "owner" },
   },
 ];
 

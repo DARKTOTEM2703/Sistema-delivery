@@ -23,6 +23,19 @@ export default {
     return await api.get(`/products/${id}`);
   },
 
+  // PRODUCTOS
+  async createProduct(productData) {
+    return await api.post("/products", productData);
+  },
+
+  async updateProduct(id, productData) {
+    return await api.put(`/products/${id}`, productData);
+  },
+
+  async deleteProduct(id) {
+    return await api.delete(`/products/${id}`);
+  },
+
   // RESTAURANTES
   async getRestaurants() {
     try {
@@ -213,5 +226,10 @@ export default {
 
   async switchRole(roleData) {
     return await api.post("/user/switch-role", roleData);
+  },
+
+  // RESTAURANTES - Dashboard
+  async getRestaurantDashboardStats(restaurantId) {
+    return await api.get(`/restaurants/${restaurantId}/dashboard-stats`);
   },
 };

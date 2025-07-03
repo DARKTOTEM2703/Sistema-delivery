@@ -1,8 +1,7 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, computed } from 'vue';
 
-const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
-const auth = inject('auth'); // Inyectar el servicio de autenticación
+const auth = inject('auth');
 const showUserMenu = ref(false);
 
 defineProps({
@@ -37,6 +36,19 @@ function handleLogout() {
 if (isDarkMode.value) {
   document.documentElement.classList.add('dark-mode');
 }
+
+// ✅ AGREGAR ESTAS VARIABLES REACTIVAS
+const hasRestaurant = computed(() => {
+  const user = auth.getUser();
+  // ✅ Verificar por rol 'owner' o si tiene owned_restaurant_id
+  return user?.role === 'owner' || user?.owned_restaurant_id;
+});
+
+const restaurantId = computed(() => {
+  const user = auth.getUser();
+  // ✅ Obtener la ID del restaurante del usuario
+  return user?.owned_restaurant_id || null;
+});
 </script>
 
 <template>
@@ -65,6 +77,31 @@ if (isDarkMode.value) {
           </button>
           <div v-if="showUserMenu" class="dropdown-menu">
             <router-link to="/profile" @click="showUserMenu = false">Mi Perfil</router-link>
+            
+            <!-- ✅ AGREGAR ESTAS LÍNEAS AQUÍ -->
+            <div class="dropdown-divider"></div>
+            
+            <!-- Solo mostrar si NO tiene restaurante -->
+            <router-link 
+              v-if="!hasRestaurant" 
+              to="/create-restaurant" 
+              @click="showUserMenu = false"
+              class="restaurant-link"
+            >
+              🏪 Abrir Restaurante
+            </router-link>
+            
+            <!-- Solo mostrar si YA tiene restaurante -->
+            <router-link 
+              v-if="hasRestaurant && restaurantId" 
+              :to="`/owner/dashboard/${restaurantId}`"
+              @click="showUserMenu = false"
+              class="dashboard-link"
+            >
+              📊 Mi Dashboard
+            </router-link>
+            
+            <div class="dropdown-divider"></div>
             <a href="#" @click.prevent="handleLogout">Cerrar sesión</a>
           </div>
         </div>
@@ -276,5 +313,43 @@ body {
 .brand-link {
   text-decoration: none;
   color: inherit;
+}
+
+/* ✅ AGREGAR ESTOS ESTILOS */
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.5rem 0;
+}
+
+.restaurant-link,
+.dashboard-link {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.restaurant-link {
+  background: linear-gradient(135deg, #ff7b00, #ff9f40);
+  color: white !important;
+  margin: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.restaurant-link:hover {
+  background: linear-gradient(135deg, #e66900, #ff8c1a);
+}
+
+.dashboard-link {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: white !important;
+  margin: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.dashboard-link:hover {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
 }
 </style>
