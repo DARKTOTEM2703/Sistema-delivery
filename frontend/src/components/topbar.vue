@@ -4,6 +4,9 @@ import { ref, inject, computed } from 'vue';
 const auth = inject('auth');
 const showUserMenu = ref(false);
 
+// ✅ AGREGAR ESTA VARIABLE QUE FALTA
+const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
+
 defineProps({
   cartTotal: {
     type: Number,
@@ -37,7 +40,7 @@ if (isDarkMode.value) {
   document.documentElement.classList.add('dark-mode');
 }
 
-// ✅ AGREGAR ESTAS VARIABLES REACTIVAS
+// Variables reactivas para restaurantes
 const hasRestaurant = computed(() => {
   const user = auth.getUser();
   // ✅ Verificar por rol 'owner' o si tiene owned_restaurant_id

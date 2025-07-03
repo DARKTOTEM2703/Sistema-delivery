@@ -14,7 +14,8 @@
         <div v-for="item in cartItems" :key="item.id" class="cart-item">
           <div class="item-info">
             <h3>{{ item.name }}</h3>
-            <p class="item-price">${{ item.price.toFixed(2) }}</p>
+            <!-- ✅ ARREGLAR AQUÍ TAMBIÉN -->
+            <p class="item-price">${{ formatPrice(item.price) }}</p>
           </div>
           <div class="item-actions">
             <button class="quantity-btn" @click="decreaseQuantity(item)">-</button>
@@ -29,7 +30,8 @@
     <div class="sidebar-footer">
       <div class="total">
         <span>Total:</span>
-        <span class="total-price">${{ totalPrice.toFixed(2) }}</span>
+        <!-- ✅ Y AQUÍ -->
+        <span class="total-price">${{ formatPrice(totalPrice) }}</span>
       </div>
       <button class="checkout-button" :disabled="cartItems.length === 0" @click="checkout">
         Completar Pedido
@@ -58,6 +60,12 @@ const totalPrice = computed(() => {
   return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 });
 
+// ✅ AGREGAR ESTA FUNCIÓN
+function formatPrice(price) {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+}
+
 function increaseQuantity(item) {
   emit('update-item', { ...item, quantity: item.quantity + 1 });
 }
@@ -65,8 +73,6 @@ function increaseQuantity(item) {
 function decreaseQuantity(item) {
   if (item.quantity > 1) {
     emit('update-item', { ...item, quantity: item.quantity - 1 });
-  } else {
-    removeItem(item);
   }
 }
 

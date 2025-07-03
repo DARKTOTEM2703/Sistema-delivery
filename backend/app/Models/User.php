@@ -30,7 +30,9 @@ class User extends Authenticatable
         'address',
         'avatar',
         'is_active',
-        'last_login_at'
+        'last_login_at',
+        'role',                    // ✅ SOLO AGREGAR ESTE
+        'owned_restaurant_id'      // ✅ SOLO AGREGAR ESTE
     ];
 
     /**

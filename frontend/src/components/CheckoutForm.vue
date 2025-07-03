@@ -7,10 +7,12 @@
         <h3>Resumen del pedido</h3>
         <div v-for="item in cartItems" :key="item.id" class="order-item">
           <span>{{ item.name }} x{{ item.quantity }}</span>
-          <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
+          <!-- ✅ ARREGLAR AQUÍ TAMBIÉN -->
+          <span>${{ formatPrice(item.price * item.quantity) }}</span>
         </div>
         <div class="order-total">
-          <strong>Total: ${{ orderTotal.toFixed(2) }}</strong>
+          <!-- ✅ Y AQUÍ -->
+          <strong>Total: ${{ formatPrice(orderTotal) }}</strong>
         </div>
       </div>
       
@@ -60,6 +62,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useNotifications } from '@/services/useNotifications';
+import api from '@/services/api'; // ✅ AGREGAR ESTA LÍNEA
 
 const props = defineProps({
   isCheckoutActive: Boolean,
@@ -179,6 +182,12 @@ async function submitOrder() {
   } finally {
     isSubmitting.value = false;
   }
+}
+
+// ✅ AGREGAR ESTA FUNCIÓN
+function formatPrice(price) {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
 }
 </script>
 

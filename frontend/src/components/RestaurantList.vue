@@ -284,11 +284,17 @@ onMounted(async () => {
     
     // Cargar restaurantes
     const restaurantsResponse = await api.getRestaurants();
+    // ✅ ARREGLAR AQUÍ TAMBIÉN
     restaurants.value = restaurantsResponse.data.data || restaurantsResponse.data;
     
     // Cargar categorías
-    const categoriesResponse = await api.getRestaurantCategories();
-    categories.value = categoriesResponse.data;
+    try {
+      const categoriesResponse = await api.getRestaurantCategories();
+      categories.value = categoriesResponse.data;
+    } catch (catError) {
+      console.log('⚠️ Error cargando categorías, usando fallback');
+      categories.value = [...new Set(restaurants.value.map(r => r.category))];
+    }
     
     console.log('✅ Restaurantes cargados:', restaurants.value.length);
   } catch (error) {

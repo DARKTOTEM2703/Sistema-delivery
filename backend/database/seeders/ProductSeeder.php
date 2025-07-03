@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash; // ✅ AGREGAR ESTA LÍNEA
 use App\Models\Product;
 use App\Models\Restaurant;
-use App\Models\User;
 
 class ProductSeeder extends Seeder
 {
@@ -15,143 +13,114 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear un restaurante de ejemplo si no existe
-        $restaurant = Restaurant::first();
+        $restaurants = Restaurant::all();
         
-        if (!$restaurant) {
-            // Crear usuario propietario primero
-            $owner = User::create([
-                'name' => 'Propietario Demo',
-                'email' => 'owner@demo.com',
-                'password' => Hash::make('password123'), // ✅ CORREGIDO
-                'is_active' => true
-            ]);
-
-            // Crear restaurante
-            $restaurant = Restaurant::create([
-                'name' => 'Restaurante Demo',
-                'description' => 'Restaurante de ejemplo para testing',
-                'slug' => 'restaurante-demo',
-                'address' => 'Calle Principal 123',
-                'phone' => '+1234567890',
-                'email' => 'demo@restaurante.com',
-                'category' => 'italiana',
-                'delivery_fee' => 3.50,
-                'delivery_time_min' => 30,
-                'delivery_time_max' => 45,
-                'minimum_order' => 15.00,
-                'rating' => 4.5,
-                'total_reviews' => 0,
-                'is_active' => true,
-                'accepts_cash' => true,
-                'accepts_card' => true,
-                'business_hours' => [
-                    'monday' => ['is_open' => true, 'open' => '09:00', 'close' => '22:00'],
-                    'tuesday' => ['is_open' => true, 'open' => '09:00', 'close' => '22:00'],
-                    'wednesday' => ['is_open' => true, 'open' => '09:00', 'close' => '22:00'],
-                    'thursday' => ['is_open' => true, 'open' => '09:00', 'close' => '22:00'],
-                    'friday' => ['is_open' => true, 'open' => '09:00', 'close' => '23:00'],
-                    'saturday' => ['is_open' => true, 'open' => '10:00', 'close' => '23:00'],
-                    'sunday' => ['is_open' => false, 'open' => '', 'close' => '']
-                ],
-                'delivery_zones' => [
-                    ['radius' => 5, 'fee' => 3.50]
-                ],
-                'latitude' => 40.7128,
-                'longitude' => -74.0060,
-                'owner_id' => $owner->id
-            ]);
+        foreach ($restaurants as $restaurant) {
+            $this->createProductsForRestaurant($restaurant);
         }
-
-        $products = [
-            [
-                'name' => 'Hamburguesa Clásica',
-                'description' => 'Carne de res, lechuga, tomate, cebolla, pepinillos y salsa especial',
-                'price' => 15.99,
-                'image' => 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                'category' => 'hamburguesas',
-                'rating' => 4.7,
-                'time' => '10-15 min',
-                'servings' => '1 persona',
-                'restaurant_id' => $restaurant->id,
-                'is_available' => true,
-                'preparation_time' => 12,
-                'allergens' => 'gluten'
-            ],
-            [
-                'name' => 'Pizza Margherita',
-                'description' => 'Salsa de tomate, mozzarella fresca, albahaca y aceite de oliva',
-                'price' => 18.99,
-                'image' => 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                'category' => 'pizzas',
-                'rating' => 4.8,
-                'time' => '15-20 min',
-                'servings' => '2 personas',
-                'restaurant_id' => $restaurant->id,
-                'is_available' => true,
-                'preparation_time' => 18,
-                'allergens' => 'gluten,lactosa'
-            ],
-            [
-                'name' => 'Ensalada César',
-                'description' => 'Lechuga romana, crutones, parmesano y aderezo César',
-                'price' => 12.99,
-                'image' => 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                'category' => 'ensaladas',
-                'rating' => 4.5,
-                'time' => '5-10 min',
-                'servings' => '1 persona',
-                'restaurant_id' => $restaurant->id,
-                'is_available' => true,
-                'preparation_time' => 8,
-                'allergens' => 'lactosa'
-            ],
-            [
-                'name' => 'Espaguetis Bolognesa',
-                'description' => 'Espaguetis con salsa de carne, tomate y hierbas',
-                'price' => 16.99,
-                'image' => 'https://images.unsplash.com/photo-1598866594230-a7c12756260f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                'category' => 'pastas',
-                'rating' => 4.7,
-                'time' => '15-20 min',
-                'servings' => '1 persona',
-                'restaurant_id' => $restaurant->id,
-                'is_available' => true,
-                'preparation_time' => 16,
-                'allergens' => 'gluten'
-            ],
-            [
-                'name' => 'Tacos de Pollo',
-                'description' => 'Tortillas de maíz con pollo marinado, cebolla y cilantro',
-                'price' => 13.99,
-                'image' => 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                'category' => 'mexicana',
-                'rating' => 4.6,
-                'time' => '8-12 min',
-                'servings' => '1 persona',
-                'restaurant_id' => $restaurant->id,
-                'is_available' => true,
-                'preparation_time' => 10,
-                'allergens' => ''
-            ],
-            [
-                'name' => 'Sushi Roll California',
-                'description' => 'Rollo de sushi con cangrejo, aguacate y pepino',
-                'price' => 22.99,
-                'image' => 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                'category' => 'japonesa',
-                'rating' => 4.9,
-                'time' => '12-18 min',
-                'servings' => '1 persona',
-                'restaurant_id' => $restaurant->id,
-                'is_available' => true,
-                'preparation_time' => 15,
-                'allergens' => 'pescado'
-            ]
-        ];
-
-        foreach ($products as $product) {
-            Product::create($product);
+    }
+    
+    private function createProductsForRestaurant($restaurant)
+    {
+        $products = [];
+        
+        switch ($restaurant->category) {
+            case 'italiana':
+                $products = [
+                    [
+                        'name' => 'Pizza Margherita Clásica',
+                        'description' => 'Salsa de tomate San Marzano, mozzarella di bufala, albahaca fresca',
+                        'price' => 18.99,
+                        'image' => 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'pizzas',
+                        'preparation_time' => 15
+                    ],
+                    [
+                        'name' => 'Espaguetis Carbonara',
+                        'description' => 'Pasta fresca con pancetta, huevos y queso pecorino romano',
+                        'price' => 16.99,
+                        'image' => 'https://images.unsplash.com/photo-1598866594230-a7c12756260f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'pastas',
+                        'preparation_time' => 12
+                    ]
+                ];
+                break;
+                
+            case 'americana':
+                $products = [
+                    [
+                        'name' => 'Burger Clásica Angus',
+                        'description' => 'Carne de res Angus 200g, lechuga, tomate, cebolla',
+                        'price' => 15.99,
+                        'image' => 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'hamburguesas',
+                        'preparation_time' => 12
+                    ],
+                    [
+                        'name' => 'Buffalo Wings',
+                        'description' => 'Alitas de pollo bañadas en salsa buffalo',
+                        'price' => 18.99,
+                        'image' => 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'aperitivos',
+                        'preparation_time' => 18
+                    ]
+                ];
+                break;
+                
+            case 'japonesa':
+                $products = [
+                    [
+                        'name' => 'Sushi Roll California',
+                        'description' => 'Rollo con cangrejo, aguacate, pepino y masago',
+                        'price' => 22.99,
+                        'image' => 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'sushi',
+                        'preparation_time' => 15
+                    ],
+                    [
+                        'name' => 'Ramen Tonkotsu',
+                        'description' => 'Caldo cremoso de hueso de cerdo, chashu y huevo',
+                        'price' => 19.99,
+                        'image' => 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'ramen',
+                        'preparation_time' => 20
+                    ]
+                ];
+                break;
+                
+            case 'mexicana':
+                $products = [
+                    [
+                        'name' => 'Tacos de Pastor',
+                        'description' => 'Carne de cerdo marinada con piña, cebolla y cilantro',
+                        'price' => 12.99,
+                        'image' => 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'tacos',
+                        'preparation_time' => 8
+                    ],
+                    [
+                        'name' => 'Guacamole con Totopos',
+                        'description' => 'Aguacate fresco con tomate, cebolla y cilantro',
+                        'price' => 8.99,
+                        'image' => 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                        'category' => 'aperitivos',
+                        'preparation_time' => 5
+                    ]
+                ];
+                break;
         }
+        
+        foreach ($products as $productData) {
+            $productData['restaurant_id'] = $restaurant->id;
+            $productData['rating'] = fake()->randomFloat(1, 4.0, 5.0);
+            $productData['time'] = $productData['preparation_time'] . '-' . ($productData['preparation_time'] + 5) . ' min';
+            $productData['servings'] = '1 persona';
+            $productData['is_available'] = true;
+            $productData['allergens'] = '';
+            
+            Product::create($productData);
+        }
+        
+        echo "🍽️ Productos creados para: {$restaurant->name}\n";
     }
 }

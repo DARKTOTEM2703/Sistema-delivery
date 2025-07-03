@@ -17,7 +17,8 @@
     <div class="product-info">
       <div class="product-header">
         <h3 class="product-name">{{ product.name }}</h3>
-        <span class="product-price">${{ product.price.toFixed(2) }}</span>
+        <!-- ✅ ARREGLAR AQUÍ - convertir a número -->
+        <span class="product-price">${{ formatPrice(product.price) }}</span>
       </div>
       
       <p class="product-description">{{ product.description }}</p>
@@ -54,6 +55,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['add-to-cart']);
+
+// ✅ AGREGAR ESTA FUNCIÓN
+function formatPrice(price) {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+}
 
 function addToCart() {
   emit('add-to-cart', props.product);

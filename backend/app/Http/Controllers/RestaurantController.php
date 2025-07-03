@@ -131,11 +131,16 @@ class RestaurantController extends Controller
 
             $restaurant = Restaurant::create($validated);
 
-            // Asignar rol de owner al usuario (usando try-catch para evitar errores)
+            // ✅ AGREGAR ESTA LÍNEA DESPUÉS DE CREAR RESTAURANTE
+            Auth::user()->update([
+                'role' => 'owner',
+                'owned_restaurant_id' => $restaurant->id
+            ]);
+
+            // Asignar rol de owner al usuario (esto ya existe)
             try {
                 Auth::user()->assignRole('owner', $restaurant->id);
             } catch (\Exception $e) {
-                // Si falla el rol, continuar sin error crítico
                 \Log::warning('No se pudo asignar rol de owner: ' . $e->getMessage());
             }
 
@@ -228,45 +233,19 @@ class RestaurantController extends Controller
 
     public function getCategories()
     {
-        try {
-            // Obtener categorías únicas de los restaurantes activos
-            $categories = Restaurant::where('is_active', true)
-                ->distinct()
-                ->pluck('category')
-                ->filter() // Remover valores null/vacíos
-                ->sort()
-                ->values();
+        $categories = [
+            'italiana',
+            'mexicana',
+            'china',
+            'japonesa',
+            'americana',
+            'saludable',
+            'vegetariana',
+            'comida_rapida',
+            'postres'
+        ];
 
-            // Si no hay categorías en la BD, devolver categorías por defecto
-            if ($categories->isEmpty()) {
-                $categories = collect([
-                    'italiana',
-                    'mexicana',
-                    'china',
-                    'japonesa',
-                    'hamburguesas',
-                    'pizzas',
-                    'ensaladas',
-                    'postres',
-                    'bebidas',
-                    'comida_rapida'
-                ]);
-            }
-
-            return response()->json([
-                'categories' => $categories,
-                'total' => $categories->count()
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error obteniendo categorías: ' . $e->getMessage());
-            
-            return response()->json([
-                'error' => 'Error al obtener categorías',
-                'categories' => [],
-                'total' => 0
-            ], 500);
-        }
+        return response()->json($categories);
     }
 
     public function getEmployees($id)
@@ -297,22 +276,31 @@ class RestaurantController extends Controller
         }
     }
 
-    public function getDashboardStats(Request $request)
+    public function getDashboardStats($restaurantId)
     {
-        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
+        $restaurant = Restaurant::findOrFail($restaurantId);
 
-        $period = $request->get('period', 'today'); // today, week, month, year
+        // Verificar que el usuario sea el dueño
+        if (Auth::id() !== $restaurant->owner_id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
 
-        $dateRange = $this->getDateRange($period);
+        $today = now()->startOfDay();
 
         $stats = [
-            'overview' => $this->getOverviewStats($restaurant->id, $dateRange),
-            'orders' => $this->getOrderStats($restaurant->id, $dateRange),
-            'revenue' => $this->getRevenueStats($restaurant->id, $dateRange),
-            'products' => $this->getProductStats($restaurant->id, $dateRange),
-            'reviews' => $this->getReviewStats($restaurant->id, $dateRange),
-            'customers' => $this->getCustomerStats($restaurant->id, $dateRange),
-            'charts' => $this->getChartData($restaurant->id, $dateRange, $period)
+            'todayOrders' => $restaurant->orders()->whereDate('created_at', $today)->count(),
+            'todayRevenue' => $restaurant->orders()->whereDate('created_at', $today)->sum('total'),
+            'totalProducts' => $restaurant->products()->count(),
+            'averageRating' => $restaurant->rating,
+            'totalReviews' => $restaurant->total_reviews,
+            'monthlyOrders' => $restaurant->orders()->whereBetween('created_at', [
+                now()->startOfMonth(),
+                now()->endOfMonth()
+            ])->count(),
+            'monthlyRevenue' => $restaurant->orders()->whereBetween('created_at', [
+                now()->startOfMonth(),
+                now()->endOfMonth()
+            ])->sum('total')
         ];
 
         return response()->json($stats);

@@ -12,14 +12,20 @@ use App\Http\Controllers\FavoriteController;
 // Rutas públicas
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Restaurantes públicos - ✅ ORDEN IMPORTANTE
 Route::get('/restaurants', [RestaurantController::class, 'index']);
+Route::get('/restaurants/categories', [RestaurantController::class, 'getCategories']); // ✅ ANTES DE {id}
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 Route::get('/restaurants/{id}/products', [ProductController::class, 'getByRestaurant']);
 Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'getRestaurantReviews']);
+
+// Productos públicos
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+
+// Búsqueda
 Route::get('/search', [RestaurantController::class, 'search']);
-Route::get('/restaurants/categories', [RestaurantController::class, 'getCategories']);
 
 // Rutas protegidas
 Route::middleware('auth:sanctum')->group(function () {
@@ -28,6 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'me']);
     Route::patch('/user/profile', [AuthController::class, 'updateProfile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
+
+    // Crear restaurante
+    Route::post('/restaurants', [RestaurantController::class, 'store']);
+    Route::get('/restaurants/{id}/dashboard-stats', [RestaurantController::class, 'getDashboardStats']);
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
@@ -77,18 +87,4 @@ Route::fallback(function () {
     return response()->json([
         'message' => 'Ruta no encontrada. Verifica la URL y el método HTTP.'
     ], 404);
-});
-
-Route::prefix('restaurants')->group(function () {
-    Route::get('/', [RestaurantController::class, 'index']);
-    Route::get('/categories', [RestaurantController::class, 'getCategories']); // ✅ AGREGAR ESTA LÍNEA
-    Route::get('/{id}', [RestaurantController::class, 'show']);
-    
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/', [RestaurantController::class, 'store']);
-        Route::put('/{id}', [RestaurantController::class, 'update']);
-        Route::delete('/{id}', [RestaurantController::class, 'destroy']);
-        Route::get('/{id}/employees', [RestaurantController::class, 'getEmployees']);
-        Route::get('/{id}/dashboard-stats', [RestaurantController::class, 'getDashboardStats']);
-    });
 });

@@ -149,9 +149,12 @@ onMounted(async () => {
     const response = await api.getProducts();
     console.log('✅ Respuesta de la API:', response.data);
     
-    if (response.data && response.data.length > 0) {
-      products.value = response.data;
-      console.log('✅ Productos cargados desde la API');
+    // ✅ ARREGLAR AQUÍ - Manejar respuesta paginada de Laravel
+    const productsData = response.data.data || response.data; // Laravel paginated response
+    
+    if (productsData && productsData.length > 0) {
+      products.value = productsData;
+      console.log('✅ Productos cargados desde la API:', productsData.length);
     } else {
       console.log('⚠️ API devolvió datos vacíos, usando productos de fallback');
       products.value = fallbackProducts;
