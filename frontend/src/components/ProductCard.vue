@@ -38,15 +38,27 @@
         </div>
       </div>
       
-      <button class="add-button" @click="addToCart">
+      <button class="add-button" @click="handleAddToCart">
         <span class="plus-icon">+</span>
         Agregar
       </button>
+      
+      <!-- ✅ AGREGAR EL GUARD -->
+      <OrdenGuard 
+        v-if="showAuthRequired" 
+        @close="showAuthRequired = false" 
+      />
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, inject } from 'vue';
+import OrdenGuard from './OrdenGuard.vue';
+
+const auth = inject('auth');
+const showAuthRequired = ref(false);
+
 const props = defineProps({
   product: {
     type: Object,
@@ -56,13 +68,19 @@ const props = defineProps({
 
 const emit = defineEmits(['add-to-cart']);
 
-// ✅ AGREGAR ESTA FUNCIÓN
 function formatPrice(price) {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
   return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
 }
 
-function addToCart() {
+function handleAddToCart() {
+  // ✅ VERIFICAR AUTENTICACIÓN ANTES DE AGREGAR
+  if (!auth.isAuthenticated()) {
+    showAuthRequired.value = true;
+    return;
+  }
+  
+  // Si está autenticado, agregar al carrito
   emit('add-to-cart', props.product);
 }
 </script>

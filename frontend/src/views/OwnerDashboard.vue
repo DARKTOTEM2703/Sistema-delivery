@@ -4,6 +4,14 @@
     <div class="dashboard-header">
       <h1>🏪 Mi Restaurante - {{ restaurant?.name }}</h1>
       <div class="header-actions">
+        <!-- ✅ AGREGAR BOTÓN DEL POS -->
+        <router-link 
+          :to="`/pos/${restaurantId}`" 
+          class="btn-pos"
+        >
+          🧾 Punto de Venta
+        </router-link>
+        
         <button @click="showAddProduct = true" class="btn-primary">
           ➕ Agregar Producto
         </button>
@@ -236,5 +244,23 @@ const toggleProductStatus = async (product) => {
 .btn-toggle {
   background: #10b981;
   color: white;
+}
+
+.btn-pos {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-pos:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 </style>

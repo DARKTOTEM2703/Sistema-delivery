@@ -30,18 +30,33 @@
     <div class="sidebar-footer">
       <div class="total">
         <span>Total:</span>
-        <!-- ✅ Y AQUÍ -->
         <span class="total-price">${{ formatPrice(totalPrice) }}</span>
       </div>
-      <button class="checkout-button" :disabled="cartItems.length === 0" @click="checkout">
+      
+      <!-- ✅ CAMBIAR ESTE BOTÓN -->
+      <button 
+        class="checkout-button" 
+        :disabled="cartItems.length === 0" 
+        @click="handleCheckout"
+      >
         Completar Pedido
       </button>
     </div>
+    
+    <!-- ✅ AGREGAR EL GUARD -->
+    <OrdenGuard 
+      v-if="showAuthRequired" 
+      @close="showAuthRequired = false" 
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, inject } from 'vue';
+import OrdenGuard from './OrdenGuard.vue';
+
+const auth = inject('auth');
+const showAuthRequired = ref(false);
 
 const props = defineProps({
   cartItems: {
@@ -80,7 +95,14 @@ function removeItem(item) {
   emit('remove-item', item);
 }
 
-function checkout() {
+function handleCheckout() {
+  // ✅ VERIFICAR AUTENTICACIÓN ANTES DEL CHECKOUT
+  if (!auth.isAuthenticated()) {
+    showAuthRequired.value = true;
+    return;
+  }
+  
+  // Si está autenticado, proceder con checkout
   emit('checkout');
 }
 </script>

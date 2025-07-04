@@ -41,6 +41,16 @@ const routes = [
     component: OwnerDashboard,
     meta: { requiresAuth: true, requiresRole: "owner" },
   },
+  {
+    path: "/pos/:id",
+    name: "POSView",
+    component: () => import("@/views/POSView.vue"),
+    meta: { 
+      requiresAuth: true, 
+      requiresRole: "owner",
+      title: "Punto de Venta"
+    },
+  },
 ];
 
 const router = createRouter({
