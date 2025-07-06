@@ -1,4 +1,3 @@
-<!-- filepath: c:\xampp\htdocs\Sistema-delivery\frontend\src\components\CloseShiftModal.vue -->
 <template>
   <Teleport to="body">
     <div class="modal-overlay" @click.self="$emit('close')">

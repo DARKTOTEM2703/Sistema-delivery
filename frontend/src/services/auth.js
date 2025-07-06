@@ -5,6 +5,7 @@ const state = reactive({
   user: JSON.parse(localStorage.getItem("user")) || null,
   isAuthenticated: !!localStorage.getItem("token"),
   showLoginModal: false,
+  loginMode: "login", // ✅ AGREGAR ESTA LÍNEA
 });
 
 export default {
@@ -27,43 +28,45 @@ export default {
     state.isAuthenticated = value;
   },
 
-  showLoginModal() {
+  showLoginModal(mode = "login") {
+    // ✅ AGREGAR PARÁMETRO
     state.showLoginModal = true;
+    state.loginMode = mode; // ✅ AGREGAR ESTA LÍNEA
   },
 
   closeLoginModal() {
     state.showLoginModal = false;
+    state.loginMode = "login"; // ✅ RESETEAR MODO
   },
 
   // MÉTODO DE LOGIN COMPLETAMENTE IMPLEMENTADO
   async login(credentials) {
     try {
-      console.log('🔑 Iniciando proceso de login...');
-      
+      console.log("🔑 Iniciando proceso de login...");
+
       const response = await api.login(credentials);
       const { user, token } = response.data;
-      
+
       // Guardar token y usuario en localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      
+
       // Actualizar estado reactivo
       state.user = user;
       state.isAuthenticated = true;
       state.showLoginModal = false;
-      
-      console.log('✅ Login completado exitosamente');
+
+      console.log("✅ Login completado exitosamente");
       return response;
-      
     } catch (error) {
-      console.error('❌ Error en login:', error);
-      
+      console.error("❌ Error en login:", error);
+
       // Limpiar estado en caso de error
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       state.user = null;
       state.isAuthenticated = false;
-      
+
       throw error;
     }
   },
@@ -71,32 +74,31 @@ export default {
   // MÉTODO DE REGISTRO COMPLETAMENTE IMPLEMENTADO
   async register(userData) {
     try {
-      console.log('📝 Iniciando proceso de registro...');
-      
+      console.log("📝 Iniciando proceso de registro...");
+
       const response = await api.register(userData);
       const { user, token } = response.data;
-      
+
       // Guardar token y usuario en localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      
+
       // Actualizar estado reactivo
       state.user = user;
       state.isAuthenticated = true;
       state.showLoginModal = false;
-      
-      console.log('✅ Registro completado exitosamente');
+
+      console.log("✅ Registro completado exitosamente");
       return response;
-      
     } catch (error) {
-      console.error('❌ Error en registro:', error);
-      
+      console.error("❌ Error en registro:", error);
+
       // Limpiar estado en caso de error
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       state.user = null;
       state.isAuthenticated = false;
-      
+
       throw error;
     }
   },
@@ -106,17 +108,17 @@ export default {
       // Intentar logout en el servidor
       await api.logout();
     } catch (error) {
-      console.error('❌ Error al hacer logout en servidor:', error);
+      console.error("❌ Error al hacer logout en servidor:", error);
       // Continuar con logout local
     }
-    
+
     // Limpiar estado local siempre
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     state.user = null;
     state.isAuthenticated = false;
-    
-    console.log('✅ Logout completado');
+
+    console.log("✅ Logout completado");
   },
 
   // Método para verificar si el token es válido
@@ -124,7 +126,7 @@ export default {
     if (!state.isAuthenticated || !localStorage.getItem("token")) {
       return false;
     }
-    
+
     try {
       const response = await api.get("/user");
       return true;
@@ -133,5 +135,5 @@ export default {
       await this.logout();
       return false;
     }
-  }
+  },
 };

@@ -48,12 +48,12 @@ const isAuthenticated = computed(() => auth.isAuthenticated())
 const emit = defineEmits(['close'])
 
 function showRegister() {
-  auth.showLoginModal()
+  auth.showLoginModal('register') // ✅ PASAR 'register' COMO PARÁMETRO
   emit('close')
 }
 
 function showLogin() {
-  auth.showLoginModal()
+  auth.showLoginModal('login') // ✅ PASAR 'login' COMO PARÁMETRO
   emit('close')
 }
 

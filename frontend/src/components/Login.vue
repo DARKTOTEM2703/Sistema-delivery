@@ -86,13 +86,18 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, watch } from 'vue'; // ✅ AGREGAR watch
 
 const auth = inject('auth');
 const isRegister = ref(false);
 const loading = ref(false);
 const error = ref('');
 const success = ref('');
+
+// ✅ AGREGAR ESTE WATCHER
+watch(() => auth.state.loginMode, (newMode) => {
+  isRegister.value = newMode === 'register';
+}, { immediate: true });
 
 const formData = ref({
   name: '',
