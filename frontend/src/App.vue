@@ -8,7 +8,7 @@ import Login from './components/Login.vue';
 import auth from './services/auth';
 import { useNotifications } from './services/useNotifications';
 
-// Sistema de notificaciones
+// ✅ AGREGAR EL SISTEMA DE NOTIFICACIONES
 const { notifications, success: showSuccess, error: showError } = useNotifications();
 
 // Estado del carrito
@@ -116,6 +116,13 @@ provide('cart', {
   openSidebar
 });
 
+// ✅ PROPORCIONAR NOTIFICACIONES
+provide('notifications', {
+  success: showSuccess,
+  error: showError,
+  notifications
+});
+
 // Proporciona el servicio de autenticación a todos los componentes
 provide('auth', auth);
 </script>
@@ -125,7 +132,7 @@ provide('auth', auth);
     <!-- Topbar siempre visible -->
     <topbar @open-cart="openSidebar" :cartTotal="cartTotal" />
     
-    <!-- Router View - ESTO ES LO QUE FALTABA -->
+    <!-- Router View -->
     <router-view v-slot="{ Component }">
       <transition name="page" mode="out-in">
         <component 
@@ -189,16 +196,16 @@ provide('auth', auth);
   --card-bg: #1e1e1e;
   --border-color: #333;
   --sidebar-bg: #1e1e1e;
-  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --topbar-bg: #1a1a1a;
-  --button-primary: linear-gradient(to right, #ff7b00, #ff0000);
-  --button-hover: #ff8c00;
+  --topbar-bg: #1e1e1e;
 }
 
 body {
   margin: 0;
-  padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-color);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
@@ -208,16 +215,6 @@ body {
   min-height: 100vh;
 }
 
-/* Transiciones de página */
-.page-enter-active, .page-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.page-enter-from, .page-leave-to {
-  opacity: 0;
-}
-
-/* Overlay para cuando el sidebar está abierto */
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -226,27 +223,24 @@ body {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
-  display: none;
-  backdrop-filter: blur(2px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
 }
 
 .sidebar-overlay.is-active {
-  display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
-/* Estilos para botones principales */
-.primary-button {
-  background: var(--button-primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: all 0.2s;
+/* Transiciones de página */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.primary-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
 }
 </style>

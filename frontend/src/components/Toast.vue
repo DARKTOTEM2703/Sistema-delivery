@@ -1,30 +1,35 @@
 <template>
-  <div class="toast-container">
-    <transition-group name="toast" tag="div" class="toast-wrapper">
-      <div 
-        v-for="notification in notifications" 
-        :key="notification.id"
-        :class="['toast', notification.type]"
-      >
-        <div class="toast-content">
-          <span class="toast-icon">{{ getIcon(notification.type) }}</span>
-          <span class="toast-message">{{ notification.message }}</span>
+  <Teleport to="body">
+    <div class="toast-container">
+      <transition-group name="toast" tag="div">
+        <div
+          v-for="notification in notifications"
+          :key="notification.id"
+          :class="['toast', `toast-${notification.type}`]"
+          @click="removeNotification(notification.id)"
+        >
+          <div class="toast-icon">
+            {{ getIcon(notification.type) }}
+          </div>
+          <div class="toast-message">
+            {{ notification.message }}
+          </div>
           <button 
-            class="toast-close" 
+            class="toast-close"
             @click="removeNotification(notification.id)"
           >
             ×
           </button>
         </div>
-      </div>
-    </transition-group>
-  </div>
+      </transition-group>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import { useNotifications } from '@/services/useNotifications';
+import { inject } from 'vue'
 
-const { notifications, removeNotification } = useNotifications();
+const { notifications, removeNotification } = inject('notifications')
 
 function getIcon(type) {
   const icons = {
@@ -32,96 +37,88 @@ function getIcon(type) {
     error: '❌',
     warning: '⚠️',
     info: 'ℹ️'
-  };
-  return icons[type] || icons.info;
+  }
+  return icons[type] || 'ℹ️'
 }
 </script>
 
 <style scoped>
 .toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   pointer-events: none;
 }
 
-.toast-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .toast {
-  background: var(--card-bg, white);
-  border: 1px solid var(--border-color, #e1e5e9);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 300px;
-  max-width: 500px;
-  pointer-events: auto;
-}
-
-.toast-content {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  gap: 12px;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  cursor: pointer;
+  max-width: 400px;
+  min-width: 300px;
+}
+
+.toast-success {
+  background: rgba(16, 185, 129, 0.9);
+  color: white;
+  border-left: 4px solid #10b981;
+}
+
+.toast-error {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border-left: 4px solid #ef4444;
+}
+
+.toast-warning {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+  border-left: 4px solid #f59e0b;
+}
+
+.toast-info {
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  border-left: 4px solid #3b82f6;
 }
 
 .toast-icon {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
 .toast-message {
   flex: 1;
-  color: var(--text-color, #333);
-  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .toast-close {
   background: none;
   border: none;
-  font-size: 1.4rem;
+  color: currentColor;
+  font-size: 1.25rem;
   cursor: pointer;
-  color: var(--text-color, #333);
-  opacity: 0.7;
   padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: opacity 0.2s, background-color 0.2s;
+  opacity: 0.8;
+  transition: opacity 0.2s;
 }
 
 .toast-close:hover {
   opacity: 1;
-  background-color: rgba(0, 0, 0, 0.1);
 }
 
-.toast.success {
-  border-left: 4px solid #22c55e;
-}
-
-.toast.error {
-  border-left: 4px solid #ef4444;
-}
-
-.toast.warning {
-  border-left: 4px solid #f59e0b;
-}
-
-.toast.info {
-  border-left: 4px solid #3b82f6;
-}
-
-.toast-enter-active {
-  transition: all 0.3s ease;
-}
-
+/* Animaciones */
+.toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;
 }
@@ -138,5 +135,18 @@ function getIcon(type) {
 
 .toast-move {
   transition: transform 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .toast-container {
+    top: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+  }
+  
+  .toast {
+    min-width: auto;
+    max-width: none;
+  }
 }
 </style>

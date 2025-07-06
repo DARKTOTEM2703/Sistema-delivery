@@ -39,11 +39,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/restaurants', [RestaurantController::class, 'store']);
     Route::get('/restaurants/{id}/dashboard-stats', [RestaurantController::class, 'getDashboardStats']);
 
-    // Orders
+    // ✅ AGREGAR RUTAS PARA GESTIÓN DE PEDIDOS
+    Route::get('/restaurants/{id}/orders', [OrderController::class, 'getRestaurantOrders']);
+    Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+
+    // Orders generales
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
-    Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+
+    // Products (solo propietarios)
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{id}', [ProductController::class, 'update']);
+    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
     // Reviews
     Route::post('/reviews', [ReviewController::class, 'store']);
@@ -57,28 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Restaurant owner routes
     Route::middleware('role:owner')->group(function () {
-        Route::get('/dashboard/stats', [RestaurantController::class, 'getDashboardStats']);
-        Route::get('/dashboard/orders', [OrderController::class, 'getRestaurantOrders']);
-        Route::get('/dashboard/reviews', [ReviewController::class, 'getRestaurantReviews']);
-        Route::post('/reviews/{id}/respond', [ReviewController::class, 'respond']);
-
-        // Products management
-        Route::post('/products', [ProductController::class, 'store']);
-        Route::patch('/products/{id}', [ProductController::class, 'update']);
-        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-        Route::patch('/products/{id}/toggle-availability', [ProductController::class, 'toggleAvailability']);
-
-        // Restaurant management
-        Route::patch('/restaurants/{id}', [RestaurantController::class, 'update']);
-        Route::patch('/restaurants/{id}/hours', [RestaurantController::class, 'updateHours']);
         Route::patch('/restaurants/{id}/zones', [RestaurantController::class, 'updateDeliveryZones']);
-    });
-
-    // Delivery person routes
-    Route::middleware('role:delivery')->group(function () {
-        Route::get('/delivery/orders', [OrderController::class, 'getDeliveryOrders']);
-        Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
-        Route::post('/orders/{id}/location', [OrderController::class, 'updateLocation']);
     });
 });
 

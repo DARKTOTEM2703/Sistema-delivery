@@ -43,13 +43,9 @@ const routes = [
   },
   {
     path: "/pos/:id",
-    name: "POSView",
-    component: () => import("@/views/POSView.vue"),
-    meta: { 
-      requiresAuth: true, 
-      requiresRole: "owner",
-      title: "Punto de Venta"
-    },
+    name: "POS",
+    component: () => import("../views/POSView.vue"),
+    meta: { requiresAuth: true },
   },
 ];
 

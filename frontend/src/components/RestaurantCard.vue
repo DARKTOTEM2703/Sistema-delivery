@@ -1,4 +1,3 @@
-<!-- filepath: frontend/src/components/RestaurantCard.vue -->
 <template>
   <div class="restaurant-card" @click="$emit('select-restaurant', restaurant)">
     <div class="restaurant-image">

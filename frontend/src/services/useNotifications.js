@@ -1,64 +1,58 @@
-import { ref, readonly } from 'vue';
+import { ref, reactive } from "vue";
 
-const notifications = ref([]);
-let nextId = 1;
+const notifications = reactive([]);
+
+let notificationId = 0;
 
 export function useNotifications() {
-  function addNotification(message, type = 'info', duration = 3000) {
-    const id = nextId++;
-    const notification = { 
-      id, 
-      message, 
-      type, 
-      timestamp: Date.now() 
+  const addNotification = (type, message, duration = 4000) => {
+    const id = ++notificationId;
+    const notification = {
+      id,
+      type,
+      message,
+      duration,
     };
-    
-    notifications.value.push(notification);
-    
-    if (duration > 0) {
-      setTimeout(() => {
-        removeNotification(id);
-      }, duration);
-    }
-    
+
+    notifications.push(notification);
+
+    // Auto-remover después del duration
+    setTimeout(() => {
+      removeNotification(id);
+    }, duration);
+
     return id;
-  }
-  
-  function removeNotification(id) {
-    const index = notifications.value.findIndex(n => n.id === id);
+  };
+
+  const removeNotification = (id) => {
+    const index = notifications.findIndex((n) => n.id === id);
     if (index > -1) {
-      notifications.value.splice(index, 1);
+      notifications.splice(index, 1);
     }
-  }
-  
-  function success(message, duration = 4000) {
-    return addNotification(message, 'success', duration);
-  }
-  
-  function error(message, duration = 6000) {
-    return addNotification(message, 'error', duration);
-  }
-  
-  function warning(message, duration = 5000) {
-    return addNotification(message, 'warning', duration);
-  }
-  
-  function info(message, duration = 3000) {
-    return addNotification(message, 'info', duration);
-  }
-  
-  function clearAll() {
-    notifications.value = [];
-  }
-  
+  };
+
+  const success = (message, duration) => {
+    return addNotification("success", message, duration);
+  };
+
+  const error = (message, duration) => {
+    return addNotification("error", message, duration);
+  };
+
+  const warning = (message, duration) => {
+    return addNotification("warning", message, duration);
+  };
+
+  const info = (message, duration) => {
+    return addNotification("info", message, duration);
+  };
+
   return {
-    notifications: readonly(notifications),
-    addNotification,
-    removeNotification,
+    notifications,
     success,
     error,
     warning,
     info,
-    clearAll
+    removeNotification,
   };
 }
