@@ -30,7 +30,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Mario Rossi',
                 'email' => 'mario@pizzaitalia.com',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make(value: 'password123'),
                 'phone' => '+1234567891',
                 'address' => 'Via Roma 45',
                 'role' => 'owner',

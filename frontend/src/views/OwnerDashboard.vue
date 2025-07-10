@@ -745,64 +745,68 @@ const exportSalesData = () => {
 .stat-card {
   background: var(--bg-primary);
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 12px; /* Bordes más redondeados */
   text-align: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
   border: 1px solid var(--border-color);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); /* Transición más suave */
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.stat-card h3 {
-  color: var(--text-secondary);
+.stat-card:hover {
+  transform: translateY(-5px); /* Mayor elevación */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.05);
+  border-color: rgba(59, 130, 246, 0.3); /* Borde azulado sutil */
 }
 
+/* Efecto de brillo en el fondo al pasar el cursor */
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-100%);
+  transition: all 0s;
+  opacity: 0;
+}
+
+.stat-card:hover::after {
+  transform: translateX(100%);
+  opacity: 1;
+  transition: all 0.7s;
+}
+
+/* Ajuste para el texto de valor de la estadística */
 .stat-number {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 2.25rem;
+  font-weight: 700;
   color: #3b82f6;
-  margin: 0.5rem 0 0 0;
+  margin: 0.75rem 0 0 0;
+  transition: all 0.3s ease;
 }
 
+.stat-card:hover .stat-number {
+  transform: scale(1.05);
+  color: #2563eb; /* Azul más vibrante en hover */
+}
+
+/* Para el color rojo de pedidos pendientes */
 .stat-number.urgent {
   color: #ef4444;
-  animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-.orders-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.orders-header h2 {
-  color: var(--text-primary);
-}
-
-.auto-refresh {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.refresh-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-  opacity: 0.5;
-  transition: opacity 0.3s;
-}
-
-.refresh-indicator.active {
-  opacity: 1;
-  animation: pulse 1s infinite;
+.stat-card:hover .stat-number.urgent {
+  color: #dc2626; /* Rojo más vibrante en hover */
 }
 
 .order-filters {
