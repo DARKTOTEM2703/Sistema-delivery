@@ -38,9 +38,26 @@ class ProductController extends Controller
             'is_available' => 'boolean'
         ]);
 
-        // Verificar que el usuario sea owner del restaurante
         $restaurant = Restaurant::findOrFail($validated['restaurant_id']);
-        if (Auth::id() !== $restaurant->owner_id) {
+        $user = Auth::user();
+
+        // ✅ VERIFICACIÓN MÚLTIPLE
+        $isAuthorized =
+            // 1. Es super_admin/admin
+            $user->role === 'admin' ||
+            $user->hasRole('super_admin') ||
+
+            // 2. Es owner directo del restaurante
+            $user->id === $restaurant->owner_id ||
+
+            // 3. Tiene el restaurante asignado
+            ($user->role === 'owner' && $user->owned_restaurant_id === $restaurant->id) ||
+
+            // 4. Tiene rol específico en ese restaurante
+            $user->hasRole('owner', $restaurant->id);
+
+        // Si no está autorizado
+        if (!$isAuthorized) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
@@ -55,9 +72,18 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
-        
-        // Verificar permisos
-        if (Auth::id() !== $product->restaurant->owner_id) {
+        $user = Auth::user();
+        $restaurant = $product->restaurant;
+
+        // ✅ Usar la misma verificación múltiple
+        $isAuthorized =
+            $user->role === 'admin' ||
+            $user->hasRole('super_admin') ||
+            $user->id === $restaurant->owner_id ||
+            ($user->role === 'owner' && $user->owned_restaurant_id === $restaurant->id) ||
+            $user->hasRole('owner', $restaurant->id);
+
+        if (!$isAuthorized) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
@@ -83,9 +109,18 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
-        
-        // Verificar permisos
-        if (Auth::id() !== $product->restaurant->owner_id) {
+        $user = Auth::user();
+        $restaurant = $product->restaurant;
+
+        // ✅ Usar la misma verificación múltiple
+        $isAuthorized =
+            $user->role === 'admin' ||
+            $user->hasRole('super_admin') ||
+            $user->id === $restaurant->owner_id ||
+            ($user->role === 'owner' && $user->owned_restaurant_id === $restaurant->id) ||
+            $user->hasRole('owner', $restaurant->id);
+
+        if (!$isAuthorized) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
@@ -100,7 +135,7 @@ class ProductController extends Controller
     public function getByRestaurant($restaurantId)
     {
         $restaurant = Restaurant::findOrFail($restaurantId);
-        
+
         $products = Product::where('restaurant_id', $restaurantId)
             ->where('is_available', true)
             ->orderBy('created_at', 'desc')
