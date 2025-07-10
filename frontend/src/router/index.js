@@ -18,7 +18,7 @@ const routes = [
     component: RestaurantList,
   },
   {
-    path: "/restaurant/:id",
+    path: "/restaurant/:id", // Esta ruta es correcta
     name: "RestaurantMenu",
     component: () => import("@/views/RestaurantMenu.vue"),
   },

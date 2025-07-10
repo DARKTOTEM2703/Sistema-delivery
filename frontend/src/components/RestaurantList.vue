@@ -319,7 +319,7 @@ function selectRestaurant(restaurant) {
 }
 
 function viewMenu(restaurant) {
-  router.push(`/restaurant/${restaurant.id}/menu`);
+  router.push(`/restaurant/${restaurant.id}`); // ✅ Ruta correcta
 }
 
 function toggleFavorite(restaurant) {
