@@ -3,41 +3,51 @@
   <div class="owner-dashboard">
     <!-- Header del dashboard -->
     <div class="dashboard-header">
-      <h1>🏪 Mi Restaurante - {{ restaurant?.name }}</h1>
+      <h1>{{ restaurant?.name || 'Panel de Control' }}</h1>
+      
       <div class="header-actions">
-        <router-link 
-          :to="`/pos/${restaurantId}`" 
-          class="btn-pos"
-        >
-          🧾 Punto de Venta
-        </router-link>
+        <!-- Control de estado del restaurante -->
+        <div class="restaurant-status-control">
+          <div :class="['status-indicator', restaurant?.is_open ? 'open' : 'closed']">
+            {{ restaurant?.is_open ? 'Abierto' : 'Cerrado' }}
+          </div>
+          <button @click="toggleRestaurantStatus" class="btn-toggle-status">
+            {{ restaurant?.is_open ? 'Cerrar Local' : 'Abrir Local' }}
+          </button>
+        </div>
         
-        <button @click="showAddProduct = true" class="btn-primary">
-          ➕ Agregar Producto
-        </button>
+        <router-link :to="`/pos/${restaurantId}`" class="btn-pos">
+          <span>🧾 POS</span>
+        </router-link>
       </div>
     </div>
 
-    <!-- Pestañas principales -->
+    <!-- Tabs para navegar entre secciones -->
     <div class="dashboard-tabs">
       <button 
         @click="activeTab = 'orders'" 
-        :class="{ active: activeTab === 'orders' }"
-        class="tab-btn"
+        :class="['tab-btn', { active: activeTab === 'orders' }]"
       >
-        📋 Pedidos Online ({{ pendingOrdersCount }})
+        🛍️ Pedidos
       </button>
+      
       <button 
         @click="activeTab = 'menu'" 
-        :class="{ active: activeTab === 'menu' }"
-        class="tab-btn"
+        :class="['tab-btn', { active: activeTab === 'menu' }]"
       >
-        🍽️ Gestión de Menú
+        🍽️ Menú
       </button>
+      
+      <button 
+        @click="activeTab = 'inventory'" 
+        :class="['tab-btn', { active: activeTab === 'inventory' }]"
+      >
+        📦 Inventario
+      </button>
+      
       <button 
         @click="activeTab = 'reports'" 
-        :class="{ active: activeTab === 'reports' }"
-        class="tab-btn"
+        :class="['tab-btn', { active: activeTab === 'reports' }]"
       >
         📊 Reportes
       </button>
@@ -262,6 +272,81 @@
         </div>
       </div>
 
+      <!-- CONTROL DE INVENTARIO -->
+      <div v-if="activeTab === 'inventory'" class="inventory-management">
+        <div class="section-header">
+          <h2>📦 Control de Inventario</h2>
+          <button @click="showAddInventoryItem = true" class="btn-primary">
+            ➕ Añadir Ingrediente
+          </button>
+        </div>
+        
+        <div class="inventory-filters">
+          <div class="search-box">
+            <input 
+              type="text" 
+              v-model="inventorySearch" 
+              placeholder="Buscar ingrediente..." 
+              class="inventory-search"
+            />
+          </div>
+          
+          <div class="filter-options">
+            <select v-model="inventoryFilter" class="inventory-filter">
+              <option value="all">Todos los ingredientes</option>
+              <option value="low">Stock bajo</option>
+              <option value="out">Agotados</option>
+            </select>
+          </div>
+        </div>
+        
+        <div v-if="inventoryItems.length > 0" class="inventory-table-container">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Ingrediente</th>
+                <th>Categoría</th>
+                <th>Stock Actual</th>
+                <th>Unidad</th>
+                <th>Stock Mínimo</th>
+                <th>Último Restock</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in filteredInventory" :key="item.id" :class="getInventoryRowClass(item)">
+                <td>{{ item.name }}</td>
+                <td>{{ item.category }}</td>
+                <td class="quantity-cell">
+                  <span class="quantity">{{ item.current_stock }}</span>
+                </td>
+                <td>{{ item.unit }}</td>
+                <td>{{ item.min_stock }}</td>
+                <td>{{ formatDate(item.last_restock_at) }}</td>
+                <td class="actions-cell">
+                  <button @click="handleRestockClick(item)" class="btn-restock">
+                    ↻ Restock
+                  </button>
+                  <button @click="handleEditInventoryItem(item)" class="btn-edit">
+                    ✏️ Editar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Estado vacío -->
+        <div v-else class="empty-inventory">
+          <div class="empty-icon">📦</div>
+          <h3>No hay ingredientes registrados</h3>
+          <p>Añade ingredientes para gestionar tu inventario</p>
+          <button @click="showAddInventoryItem = true" class="btn-primary">
+            ➕ Añadir Primer Ingrediente
+          </button>
+        </div>
+      </div>
+      
       <!-- REPORTES -->
       <div v-if="activeTab === 'reports'" class="reports-section">
         <h2>📊 Reportes y Estadísticas</h2>
@@ -317,6 +402,28 @@
       :restaurant-id="restaurantId"
       @close="showSalesReport = false"
     />
+    
+    <InventoryItemModal 
+      v-if="showAddInventoryItem"
+      :restaurant-id="restaurantId"
+      @close="showAddInventoryItem = false"
+      @saved="handleInventoryItemSaved"
+    />
+
+    <InventoryItemModal 
+      v-if="editingInventoryItem"
+      :restaurant-id="restaurantId"
+      :item="editingInventoryItem"
+      @close="editingInventoryItem = null"
+      @saved="handleInventoryItemSaved"
+    />
+
+    <RestockModal
+      v-if="showRestockModal && selectedInventoryItem"
+      :item="selectedInventoryItem"
+      @close="closeRestockModal"
+      @restocked="handleRestocked"
+    />
   </div>
 </template>
 
@@ -325,6 +432,9 @@ import { ref, computed, onMounted, onUnmounted, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import ProductModal from '@/components/ProductModal.vue'
 import SalesReportModal from '@/components/SalesReportModal.vue'
+// Importa los nuevos componentes
+import InventoryItemModal from '@/components/InventoryItemModal.vue'
+import RestockModal from '@/components/RestockModal.vue'
 import api from '@/services/api'
 
 const route = useRoute()
@@ -350,6 +460,15 @@ const selectedOrderStatus = ref('all')
 const isRefreshing = ref(false)
 const showSalesReport = ref(false)
 const topProduct = ref(null)
+
+// Estados para inventario
+const inventoryItems = ref([])
+const inventorySearch = ref('')
+const inventoryFilter = ref('all')
+const showAddInventoryItem = ref(false)
+const editingInventoryItem = ref(null)
+const selectedInventoryItem = ref(null)
+const showRestockModal = ref(false)
 
 // Intervalos
 let refreshInterval = null
@@ -380,6 +499,31 @@ const refreshIndicatorClass = computed(() => {
   return ['refresh-indicator', { active: isRefreshing.value }]
 })
 
+// Computed para filtrar el inventario
+const filteredInventory = computed(() => {
+  let filtered = inventoryItems.value;
+  
+  // Filtrar por búsqueda
+  if (inventorySearch.value) {
+    const searchTerm = inventorySearch.value.toLowerCase();
+    filtered = filtered.filter(item => 
+      item.name.toLowerCase().includes(searchTerm) || 
+      item.category.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  // Filtrar por estado de stock
+  if (inventoryFilter.value === 'low') {
+    filtered = filtered.filter(item => 
+      item.current_stock <= item.min_stock && item.current_stock > 0
+    );
+  } else if (inventoryFilter.value === 'out') {
+    filtered = filtered.filter(item => item.current_stock <= 0);
+  }
+  
+  return filtered;
+})
+
 // Métodos para clases dinámicas
 function getFilterButtonClass(statusKey) {
   return [
@@ -401,12 +545,35 @@ function getProductStatusClass(isAvailable) {
   return ['status-badge', { available: isAvailable }]
 }
 
+// Función para obtener la clase de la fila según el nivel de stock
+function getInventoryRowClass(item) {
+  if (item.current_stock <= 0) {
+    return 'out-of-stock';
+  } else if (item.current_stock <= item.min_stock) {
+    return 'low-stock';
+  }
+  return '';
+}
+
+// Formatear fecha
+function formatDate(dateString) {
+  if (!dateString) return 'Nunca';
+  return new Date(dateString).toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 // Lifecycle
 onMounted(async () => {
   await loadRestaurant()
   await loadProducts()
   await loadStats()
   await loadOrders()
+  await loadInventory() // Agregar carga del inventario
   startAutoRefresh()
 })
 
@@ -517,6 +684,17 @@ const loadOrders = async () => {
   }
 }
 
+const loadInventory = async () => {
+  try {
+    const response = await api.get(`/restaurants/${restaurantId}/inventory`)
+    inventoryItems.value = response.data
+  } catch (error) {
+    console.error('Error cargando inventario:', error)
+    showError?.('Error al cargar el inventario')
+    inventoryItems.value = []
+  }
+}
+
 const startAutoRefresh = () => {
   refreshInterval = setInterval(() => {
     loadOrders()
@@ -560,6 +738,26 @@ const cancelOrder = async (orderId) => {
   }
 }
 
+const toggleRestaurantStatus = async () => {
+  try {
+    const newStatus = !restaurant.value?.is_open
+    await api.patch(`/restaurants/${restaurantId}/toggle-status`, {
+      is_open: newStatus
+    })
+    
+    restaurant.value.is_open = newStatus
+    
+    showSuccess(
+      newStatus 
+        ? 'Restaurante abierto y listo para recibir pedidos' 
+        : 'Restaurante cerrado temporalmente'
+    )
+  } catch (error) {
+    console.error('Error cambiando estado del restaurante:', error)
+    showError('No se pudo cambiar el estado del restaurante')
+  }
+}
+
 // Métodos helper
 const getStatusLabel = (status) => {
   const statusObj = orderStatuses.find(s => s.key === status)
@@ -589,8 +787,10 @@ const getTimeAgo = (timestamp) => {
   return `${diffHours}h ${diffMinutes % 60}min`
 }
 
-const formatPrice = (price) => {
-  return parseFloat(price || 0).toFixed(2)
+// Define la función formatPrice correctamente
+function formatPrice(price) {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
 }
 
 // Métodos de productos
@@ -626,6 +826,33 @@ const toggleProductStatus = async (product) => {
 
 const exportSalesData = () => {
   showSuccess?.('Función de exportación en desarrollo')
+}
+
+// Funciones para manejar el inventario
+const handleEditInventoryItem = (item) => {
+  editingInventoryItem.value = item
+}
+
+const handleInventoryItemSaved = async () => {
+  showAddInventoryItem.value = false
+  editingInventoryItem.value = null
+  showSuccess?.('Ingrediente guardado exitosamente')
+  await loadInventory()
+}
+
+const handleRestockClick = (item) => {
+  selectedInventoryItem.value = item
+  showRestockModal.value = true
+}
+
+const closeRestockModal = () => {
+  showRestockModal.value = false
+  selectedInventoryItem.value = null
+}
+
+const handleRestocked = async () => {
+  showSuccess?.('Stock actualizado exitosamente')
+  await loadInventory()
 }
 </script>
 
@@ -1029,7 +1256,7 @@ const exportSalesData = () => {
   margin-top: 0.5rem;
 }
 
-.empty-orders, .empty-products {
+.empty-orders, .empty-products, .empty-inventory {
   text-align: center;
   padding: 4rem 2rem;
   color: var(--text-secondary);
@@ -1038,7 +1265,7 @@ const exportSalesData = () => {
   border: 1px solid var(--border-color);
 }
 
-.empty-orders h3, .empty-products h3 {
+.empty-orders h3, .empty-products h3, .empty-inventory h3 {
   color: var(--text-primary);
 }
 

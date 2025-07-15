@@ -14,7 +14,6 @@ api.interceptors.request.use((config) => {
 });
 
 export default {
-  // ✅ MÉTODOS BÁSICOS DE AXIOS
   async get(url, config = {}) {
     return await api.get(url, config);
   },

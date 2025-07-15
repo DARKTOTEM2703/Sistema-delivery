@@ -6,22 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('cash_movements', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('restaurants', function (Blueprint $table) {
+            $table->boolean('is_open')->default(false)->after('is_active');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('cash_movements');
+        Schema::table('restaurants', function (Blueprint $table) {
+            $table->dropColumn('is_open');
+        });
     }
 };

@@ -47,6 +47,12 @@ const routes = [
     component: () => import("../views/POSView.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/orders/:id/tracking",
+    name: "OrderTracking",
+    component: () => import("@/views/OrderTracking.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

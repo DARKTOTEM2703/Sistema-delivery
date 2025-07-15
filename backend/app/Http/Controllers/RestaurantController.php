@@ -603,4 +603,19 @@ class RestaurantController extends Controller
     {
         return $restaurant->orders()->whereDate('created_at', today())->count();
     }
+
+    public function toggleStatus(Request $request, $id)
+    {
+        $restaurant = Restaurant::findOrFail($id);
+        
+        // Cambiar estado
+        $restaurant->is_open = $request->has('is_open') ? (bool)$request->is_open : !$restaurant->is_open;
+        $restaurant->save();
+        
+        return response()->json([
+            'status' => 'success',
+            'is_open' => $restaurant->is_open,
+            'message' => $restaurant->is_open ? 'Restaurante abierto' : 'Restaurante cerrado'
+        ]);
+    }
 }

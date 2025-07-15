@@ -8,14 +8,15 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\InventoryController;
 
 // Rutas públicas
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Restaurantes públicos - ✅ ORDEN IMPORTANTE
+// Restaurantes públicos
 Route::get('/restaurants', [RestaurantController::class, 'index']);
-Route::get('/restaurants/categories', [RestaurantController::class, 'getCategories']); // ✅ ANTES DE {id}
+Route::get('/restaurants/categories', [RestaurantController::class, 'getCategories']);
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 Route::get('/restaurants/{id}/products', [ProductController::class, 'getByRestaurant']);
 Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'getRestaurantReviews']);
@@ -63,6 +64,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
     Route::get('/favorites/check/{restaurantId}', [FavoriteController::class, 'checkFavorite']);
     Route::get('/favorites/stats', [FavoriteController::class, 'getFavoriteStats']);
+
+    // Inventario
+    Route::get('/restaurants/{id}/inventory', [InventoryController::class, 'index']);
+    Route::post('/restaurants/{id}/inventory', [InventoryController::class, 'store']);
+    Route::put('/inventory/{id}', [InventoryController::class, 'update']);
+    Route::post('/inventory/{id}/restock', [InventoryController::class, 'restock']);
+
+    // Control de estado del restaurante
+    Route::patch('/restaurants/{id}/toggle-status', [RestaurantController::class, 'toggleStatus']);
+
+    // Seguimiento de pedidos
+    Route::get('/orders/{id}/tracking', [OrderController::class, 'tracking']);
+    Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
 
     // Restaurant owner routes
     Route::middleware('role:owner')->group(function () {
