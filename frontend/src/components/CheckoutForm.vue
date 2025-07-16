@@ -135,12 +135,11 @@ async function submitOrder() {
   isSubmitting.value = true;
   
   try {
-    // ✅ OBTENER restaurant_id del primer item del carrito
     const firstItem = props.cartItems[0];
-    const restaurantId = firstItem?.restaurant_id || 1; // Fallback a 1
+    const restaurantId = firstItem?.restaurant_id || 1;
     
     const orderData = {
-      restaurant_id: restaurantId, // ✅ AGREGAR ESTA LÍNEA
+      restaurant_id: restaurantId,
       items: props.cartItems.map(item => ({
         id: item.id,
         quantity: item.quantity,
@@ -153,11 +152,7 @@ async function submitOrder() {
       special_instructions: formData.value.special_instructions
     };
     
-    console.log('📤 Enviando pedido:', orderData);
-    
     const response = await api.createOrder(orderData);
-    
-    console.log('✅ Respuesta del servidor:', response.data);
     
     emit('order-completed', {
       ...orderData,
@@ -180,7 +175,11 @@ async function submitOrder() {
     console.error('❌ Error al procesar el pedido:', err);
     showError('Error al procesar el pedido: ' + (err.response?.data?.message || err.message));
   } finally {
-    isSubmitting.value = false;
+    // Importante: Mantenemos isSubmitting en true y agregamos un pequeño retraso 
+    // para prevenir doble envío accidental
+    setTimeout(() => {
+      isSubmitting.value = false;
+    }, 1500);
   }
 }
 

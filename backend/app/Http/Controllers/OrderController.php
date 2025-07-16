@@ -9,6 +9,7 @@ use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class OrderController extends Controller
 {
@@ -104,63 +105,92 @@ class OrderController extends Controller
         return response()->json($orders);
     }
 
-    public function updateStatus(Request $request, $id)
+    public function getOrder($id)
     {
-        $order = Order::findOrFail($id);
-
-        // Verificar permiso
-        if (!Auth::user()->ownsRestaurant($order->restaurant_id) &&
-            !Auth::user()->worksAtRestaurant($order->restaurant_id)) {
+        $order = Order::with(['items.product', 'restaurant', 'user'])
+            ->where('id', $id)
+            ->first();
+        
+        // Verificar si el usuario tiene permisos para ver este pedido
+        if (!$order) {
+            return response()->json(['error' => 'Pedido no encontrado'], 404);
+        }
+        
+        // El usuario puede ver su propio pedido o el restaurante puede ver sus pedidos
+        $userIsCustomer = Auth::id() === $order->user_id;
+        $userIsRestaurant = Auth::user()->ownsRestaurant($order->restaurant_id);
+        
+        if (!$userIsCustomer && !$userIsRestaurant && !Auth::user()->hasRole('admin')) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
-
-        $request->validate([
-            'status' => 'required|string|in:pending,confirmed,preparing,ready,out_for_delivery,delivered,cancelled'
-        ]);
-
-        // Actualizar estado
-        $order->status = $request->status;
-
-        // Actualizar timestamps según el estado
-        switch ($request->status) {
-            case 'confirmed':
-                $order->accepted_at = now();
-                break;
-            case 'preparing':
-                $order->prepared_at = now();
-                break;
-            case 'out_for_delivery':
-                $order->picked_up_at = now();
-                break;
-        }
-
-        $order->save();
-
+        
         return response()->json($order);
     }
 
-    public function cancel(Request $request, $id)
+    public function updateStatus(Request $request, $id)
     {
         $order = Order::findOrFail($id);
-
-        // Verificar permiso
-        $userIsOwner = Auth::user()->ownsRestaurant($order->restaurant_id);
-        $userIsCustomer = Auth::id() === $order->user_id;
-
-        if (!$userIsOwner && !$userIsCustomer) {
+        
+        // Verificar permisos - solo el restaurante puede actualizar
+        if (!Auth::user()->ownsRestaurant($order->restaurant_id) && 
+            !Auth::user()->hasRole('admin')) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
+        
+        $validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
+        
+        $request->validate([
+            'status' => 'required|string|in:' . implode(',', $validStatuses)
+        ]);
+        
+        // Actualizar el estado
+        $order->status = $request->status;
+        
+        // Registrar timestamps según el estado
+        $timestampField = $request->status . '_at';
+        if (Schema::hasColumn('orders', $timestampField)) {
+            $order->$timestampField = now();
+        }
+        
+        // Si está listo para entrega, calcular tiempo estimado
+        if ($request->status === 'out_for_delivery' && !$order->estimated_delivery_time) {
+            // Estimar 30 minutos desde ahora
+            $order->estimated_delivery_time = now()->addMinutes(30);
+        }
+        
+        $order->save();
+        
+        return response()->json($order);
+    }
 
-        // Solo se pueden cancelar pedidos que no estén entregados
-        if (in_array($order->status, ['delivered', 'cancelled'])) {
+    public function cancelOrder(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        
+        // Verificar quién puede cancelar
+        $userIsCustomer = Auth::id() === $order->user_id;
+        $userIsRestaurant = Auth::user()->ownsRestaurant($order->restaurant_id);
+        
+        if (!$userIsCustomer && !$userIsRestaurant && !Auth::user()->hasRole('admin')) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+        
+        // Solo se puede cancelar en ciertos estados
+        if (!in_array($order->status, ['pending', 'confirmed'])) {
             return response()->json([
-                'error' => 'No se puede cancelar un pedido ya entregado o cancelado'
+                'error' => 'No se puede cancelar el pedido en su estado actual'
             ], 400);
         }
-
+        
         $order->status = 'cancelled';
+        $order->cancelled_at = now();
+        
+        if ($request->has('cancel_reason')) {
+            $order->cancel_reason = $request->cancel_reason;
+        }
+        
         $order->save();
-
+        
         return response()->json($order);
     }
 }

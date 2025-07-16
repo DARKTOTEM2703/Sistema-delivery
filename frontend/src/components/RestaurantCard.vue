@@ -1,13 +1,13 @@
 <template>
-  <div class="restaurant-card" @click="$emit('select-restaurant', restaurant)">
+  <div class="restaurant-card" :class="{ closed: !restaurant.is_open }" @click="$emit('select-restaurant', restaurant)">
     <div class="restaurant-image">
       <img 
-        :src="restaurant.cover_image || '/default-restaurant.jpg'" 
+        :src="restaurant.logo || '/img/restaurant-placeholder.jpg'" 
         :alt="restaurant.name"
         loading="lazy"
       >
-      <div class="restaurant-status" :class="{ open: restaurant.is_open_now, closed: !restaurant.is_open_now }">
-        {{ restaurant.is_open_now ? 'Abierto' : 'Cerrado' }}
+      <div class="restaurant-status" :class="restaurant.is_open ? 'status-open' : 'status-closed'">
+        {{ restaurant.is_open ? 'ABIERTO' : 'CERRADO' }}
       </div>
       <div class="restaurant-category">{{ restaurant.category }}</div>
     </div>
@@ -41,10 +41,10 @@
       <div class="restaurant-actions">
         <button 
           class="view-menu-btn" 
-          :disabled="!restaurant.is_open_now"
+          :disabled="!restaurant.is_open"
           @click.stop="viewMenu"
         >
-          {{ restaurant.is_open_now ? 'Ver Menú' : 'Cerrado' }}
+          {{ restaurant.is_open ? 'Ver Menú' : 'Cerrado' }}
         </button>
         <button class="favorite-btn" @click.stop="toggleFavorite">
           {{ isFavorite ? '❤️' : '🤍' }}
@@ -80,13 +80,12 @@ function toggleFavorite() {
 
 <style scoped>
 .restaurant-card {
-  background: var(--card-bg);
+  background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: var(--box-shadow);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -94,12 +93,16 @@ function toggleFavorite() {
 
 .restaurant-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.restaurant-card.closed {
+  opacity: 0.75;
 }
 
 .restaurant-image {
+  height: 180px;
   position: relative;
-  height: 200px;
   overflow: hidden;
 }
 
@@ -118,21 +121,22 @@ function toggleFavorite() {
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 100px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.restaurant-status.open {
-  background: #d4edda;
-  color: #155724;
+.status-open {
+  background-color: rgba(16, 185, 129, 0.9);
+  color: white;
 }
 
-.restaurant-status.closed {
-  background: #f8d7da;
-  color: #721c24;
+.status-closed {
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
 }
 
 .restaurant-category {

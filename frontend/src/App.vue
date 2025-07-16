@@ -17,6 +17,9 @@ const isSidebarOpen = ref(false);
 const cartTotal = ref(0);
 const isCheckoutActive = ref(false);
 
+// Bandera para prevenir múltiples clics
+const isAddingToCart = ref(false);
+
 // Verificar modo oscuro al iniciar
 onMounted(() => {
   // Cargar carrito desde localStorage
@@ -43,8 +46,13 @@ function calculateTotal() {
   cartTotal.value = cartItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 }
 
-// Añadir un item al carrito
+// Añadir un item al carrito con protección contra doble clic
 function addToCart(product) {
+  // Prevenir múltiples clics rápidos
+  if (isAddingToCart.value) return;
+  
+  isAddingToCart.value = true;
+  
   const existingItem = cartItems.value.find(item => item.id === product.id);
   
   if (existingItem) {
@@ -60,6 +68,11 @@ function addToCart(product) {
   
   // Usar el sistema de notificaciones
   showSuccess(`${product.name} añadido al carrito`);
+  
+  // Restablecer la bandera después de un breve retraso
+  setTimeout(() => {
+    isAddingToCart.value = false;
+  }, 300);
 }
 
 // Actualizar un item en el carrito

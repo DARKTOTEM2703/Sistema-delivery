@@ -7,13 +7,26 @@
       
       <div class="header-actions">
         <!-- Control de estado del restaurante -->
-        <div class="restaurant-status-control">
-          <div :class="['status-indicator', restaurant?.is_open ? 'open' : 'closed']">
-            {{ restaurant?.is_open ? 'Abierto' : 'Cerrado' }}
+        <div class="restaurant-status-section">
+          <h2>Estado del restaurante</h2>
+          <div class="restaurant-status-card">
+            <div :class="['status-indicator', restaurant?.is_open ? 'open' : 'closed']">
+              <span class="status-icon">{{ restaurant?.is_open ? '🟢' : '🔴' }}</span>
+              <span class="status-text">{{ restaurant?.is_open ? 'Abierto' : 'Cerrado' }}</span>
+            </div>
+            <p class="status-description">
+              {{ restaurant?.is_open 
+                ? 'Tu restaurante está abierto y recibiendo pedidos.' 
+                : 'Tu restaurante está cerrado. Los clientes no pueden realizar pedidos.' }}
+            </p>
+            <button 
+              @click="toggleRestaurantStatus" 
+              :class="['btn-toggle-status', restaurant?.is_open ? 'btn-close' : 'btn-open']"
+            >
+              <span class="btn-icon">{{ restaurant?.is_open ? '🔒' : '🔓' }}</span>
+              {{ restaurant?.is_open ? 'Cerrar Restaurante' : 'Abrir Restaurante' }}
+            </button>
           </div>
-          <button @click="toggleRestaurantStatus" class="btn-toggle-status">
-            {{ restaurant?.is_open ? 'Cerrar Local' : 'Abrir Local' }}
-          </button>
         </div>
         
         <router-link :to="`/pos/${restaurantId}`" class="btn-pos">
@@ -274,76 +287,77 @@
 
       <!-- CONTROL DE INVENTARIO -->
       <div v-if="activeTab === 'inventory'" class="inventory-management">
-        <div class="section-header">
-          <h2>📦 Control de Inventario</h2>
-          <button @click="showAddInventoryItem = true" class="btn-primary">
-            ➕ Añadir Ingrediente
-          </button>
-        </div>
-        
-        <div class="inventory-filters">
-          <div class="search-box">
-            <input 
-              type="text" 
-              v-model="inventorySearch" 
-              placeholder="Buscar ingrediente..." 
-              class="inventory-search"
-            />
+        <div class="inventory-section">
+          <div class="inventory-header">
+            <h2>📦 Control de Inventario</h2>
+            <button @click="showAddInventoryModal = true" class="btn-add-item">
+              <span class="btn-icon">➕</span>
+              Añadir Ingrediente
+            </button>
           </div>
-          
-          <div class="filter-options">
+
+          <div class="inventory-filters">
+            <div class="search-container">
+              <input 
+                type="text" 
+                v-model="inventorySearch" 
+                placeholder="Buscar ingredientes..." 
+                class="inventory-search"
+              />
+              <span class="search-icon">🔍</span>
+            </div>
             <select v-model="inventoryFilter" class="inventory-filter">
               <option value="all">Todos los ingredientes</option>
               <option value="low">Stock bajo</option>
               <option value="out">Agotados</option>
             </select>
           </div>
-        </div>
-        
-        <div v-if="inventoryItems.length > 0" class="inventory-table-container">
-          <table class="inventory-table">
-            <thead>
-              <tr>
-                <th>Ingrediente</th>
-                <th>Categoría</th>
-                <th>Stock Actual</th>
-                <th>Unidad</th>
-                <th>Stock Mínimo</th>
-                <th>Último Restock</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in filteredInventory" :key="item.id" :class="getInventoryRowClass(item)">
-                <td>{{ item.name }}</td>
-                <td>{{ item.category }}</td>
-                <td class="quantity-cell">
-                  <span class="quantity">{{ item.current_stock }}</span>
-                </td>
-                <td>{{ item.unit }}</td>
-                <td>{{ item.min_stock }}</td>
-                <td>{{ formatDate(item.last_restock_at) }}</td>
-                <td class="actions-cell">
-                  <button @click="handleRestockClick(item)" class="btn-restock">
-                    ↻ Restock
-                  </button>
-                  <button @click="handleEditInventoryItem(item)" class="btn-edit">
-                    ✏️ Editar
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <!-- Estado vacío -->
-        <div v-else class="empty-inventory">
-          <div class="empty-icon">📦</div>
-          <h3>No hay ingredientes registrados</h3>
-          <p>Añade ingredientes para gestionar tu inventario</p>
-          <button @click="showAddInventoryItem = true" class="btn-primary">
-            ➕ Añadir Primer Ingrediente
-          </button>
+
+          <div class="inventory-table-wrapper">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Ingrediente</th>
+                  <th>Categoría</th>
+                  <th>Stock Actual</th>
+                  <th>Unidad</th>
+                  <th>Stock Mínimo</th>
+                  <th>Último Restock</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in filteredInventory" :key="item.id" :class="getStockStatusClass(item)">
+                  <td class="item-name">{{ item.name }}</td>
+                  <td>{{ item.category || 'Sin categoría' }}</td>
+                  <td :class="['quantity-cell', getQuantityClass(item)]">
+                    <span class="quantity-value">{{ item.current_stock }}</span>
+                    <span class="quantity-unit">{{ item.unit }}</span>
+                  </td>
+                  <td>{{ item.unit }}</td>
+                  <td>{{ item.min_stock }}</td>
+                  <td>{{ formatDate(item.last_restock_at) }}</td>
+                  <td class="actions-cell">
+                    <button @click="handleRestockClick(item)" class="btn-action btn-restock">
+                      <span class="action-icon">↻</span>
+                      <span class="action-text">Restock</span>
+                    </button>
+                    <button @click="handleEditInventoryItem(item)" class="btn-action btn-edit">
+                      <span class="action-icon">✏️</span>
+                      <span class="action-text">Editar</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Estado vacío -->
+          <div v-if="filteredInventory.length === 0" class="empty-inventory">
+            <div class="empty-icon">📦</div>
+            <h3>No hay ingredientes que coincidan con tu búsqueda</h3>
+            <p>Prueba con otros términos o añade nuevos ingredientes</p>
+          </div>
         </div>
       </div>
       
@@ -555,16 +569,30 @@ function getInventoryRowClass(item) {
   return '';
 }
 
+// Funciones auxiliares
+function getStockStatusClass(item) {
+  if (item.current_stock <= 0) return 'out-of-stock';
+  if (item.current_stock < item.min_stock) return 'low-stock';
+  return '';
+}
+
+function getQuantityClass(item) {
+  if (item.current_stock <= 0) return 'quantity-out';
+  if (item.current_stock < item.min_stock) return 'quantity-low';
+  return 'quantity-ok';
+}
+
 // Formatear fecha
 function formatDate(dateString) {
-  if (!dateString) return 'Nunca';
-  return new Date(dateString).toLocaleString('es-ES', {
+  if (!dateString) return 'No disponible';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('es-ES', { 
     day: '2-digit',
-    month: '2-digit',
+    month: '2-digit', 
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
-  });
+  }).format(date);
 }
 
 // Lifecycle
@@ -1446,6 +1474,86 @@ const handleRestocked = async () => {
 .btn-export {
   background: #10b981;
   color: white;
+}
+
+/* Nueva sección para el estado del restaurante */
+.restaurant-status-section {
+  margin-bottom: 2rem;
+}
+
+.restaurant-status-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  font-weight: 500;
+}
+
+.status-indicator.open {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-indicator.closed {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-icon {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.status-description {
+  color: #6b7280;
+  margin: 0.5rem 0;
+}
+
+.btn-toggle-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.btn-icon {
+  margin-right: 0.5rem;
+}
+
+.btn-open {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-open:hover {
+  background-color: #059669;
+}
+
+.btn-close {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-close:hover {
+  background-color: #dc2626;
 }
 
 /* Responsive */
