@@ -1556,41 +1556,187 @@ const handleRestocked = async () => {
   background-color: #dc2626;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-  
-  .header-actions {
-    justify-content: center;
-  }
-  
-  .dashboard-tabs {
-    flex-wrap: wrap;
-  }
-  
-  .order-filters {
-    justify-content: center;
+/* Estilos para la sección de inventario */
+.inventory-section h2 {
+  margin-bottom: 1rem;
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.btn-add-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-add-item:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.inventory-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.inventory-table th {
+  background: var(--bg-secondary);
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* Estilos para los botones de acción en la tabla */
+.inventory-table .btn-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: auto;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.inventory-table .btn-restock {
+  background: #8b5cf6;
+  color: white;
+}
+
+.inventory-table .btn-edit {
+  background: #f59e0b;
+  color: white;
+}
+
+/* Estilos para las filas según el estado de stock */
+.inventory-table tr.low-stock {
+  background-color: rgba(251, 191, 36, 0.1);
+}
+
+.inventory-table tr.out-of-stock {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Estilos para la celda de cantidad */
+.quantity-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quantity-value {
+  font-weight: 600;
+}
+
+.quantity-unit {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.quantity-low {
+  color: #f59e0b;
+}
+
+.quantity-out {
+  color: #ef4444;
+}
+
+/* Media queries para OwnerDashboard */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .orders-grid {
     grid-template-columns: 1fr;
   }
   
-  .order-actions {
-    flex-direction: column;
-  }
-  
-  .btn-action {
-    min-width: auto;
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 }
 
-/* ✅ TRANSICIÓN SUAVE PARA CAMBIOS DE TEMA */
-* {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+@media (max-width: 768px) {
+  .owner-dashboard {
+    padding: 1rem;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .dashboard-tabs {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .tab-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 0.75rem;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .order-card {
+    padding: 0.75rem;
+  }
 }
 </style>

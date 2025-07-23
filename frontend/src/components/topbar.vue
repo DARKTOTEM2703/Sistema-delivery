@@ -3,8 +3,9 @@ import { ref, inject, computed } from 'vue';
 
 const auth = inject('auth');
 const showUserMenu = ref(false);
+const showMobileMenu = ref(false); // Nueva variable para controlar el menú móvil
 
-// ✅ AGREGAR ESTA VARIABLE QUE FALTA
+// ✅ Variable para el tema oscuro
 const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
 
 defineProps({
@@ -30,9 +31,18 @@ function toggleUserMenu() {
   showUserMenu.value = !showUserMenu.value;
 }
 
+function toggleMobileMenu() {
+  showMobileMenu.value = !showMobileMenu.value;
+  // Cerrar el menú de usuario si está abierto
+  if (showMobileMenu.value) {
+    showUserMenu.value = false;
+  }
+}
+
 function handleLogout() {
   auth.logout();
   showUserMenu.value = false;
+  showMobileMenu.value = false; // Cerrar también el menú móvil
 }
 
 // Aplicar tema oscuro al cargar si está guardado
@@ -43,13 +53,11 @@ if (isDarkMode.value) {
 // Variables reactivas para restaurantes
 const hasRestaurant = computed(() => {
   const user = auth.getUser();
-  // ✅ Verificar por rol 'owner' o si tiene owned_restaurant_id
   return user?.role === 'owner' || user?.owned_restaurant_id;
 });
 
 const restaurantId = computed(() => {
   const user = auth.getUser();
-  // ✅ Obtener la ID del restaurante del usuario
   return user?.owned_restaurant_id || null;
 });
 </script>
@@ -65,63 +73,60 @@ const restaurantId = computed(() => {
         </router-link>
       </div>
 
-      <!-- Navegación principal -->
-      <nav class="main-nav">
-        <router-link to="/" class="nav-link">Inicio</router-link>
-        <router-link to="/restaurants" class="nav-link">Restaurantes</router-link>
-      </nav>
-      
-      <div class="actions">
-        <!-- Usuario o botón de login -->
-        <div v-if="auth.isAuthenticated()" class="user-dropdown">
-          <button class="user-btn" @click="toggleUserMenu">
-            {{ auth.getUser().name }}
-            <span class="dropdown-icon">▼</span>
-          </button>
-          <div v-if="showUserMenu" class="dropdown-menu">
-            <router-link to="/profile" @click="showUserMenu = false">Mi Perfil</router-link>
-            
-            <!-- ✅ AGREGAR ESTAS LÍNEAS AQUÍ -->
-            <div class="dropdown-divider"></div>
-            
-            <!-- Solo mostrar si NO tiene restaurante -->
-            <router-link 
-              v-if="!hasRestaurant" 
-              to="/create-restaurant" 
-              @click="showUserMenu = false"
-              class="restaurant-link"
-            >
-              🏪 Abrir Restaurante
-            </router-link>
-            
-            <!-- Solo mostrar si YA tiene restaurante -->
-            <router-link 
-              v-if="hasRestaurant && restaurantId" 
-              :to="`/owner/dashboard/${restaurantId}`"
-              @click="showUserMenu = false"
-              class="dashboard-link"
-            >
-              📊 Mi Dashboard
-            </router-link>
-            
-            <div class="dropdown-divider"></div>
-            <a href="#" @click.prevent="handleLogout">Cerrar sesión</a>
+      <!-- Botón de menú para móviles -->
+      <button class="mobile-menu-toggle" @click="toggleMobileMenu">
+        <span class="burger-icon">☰</span>
+      </button>
+
+      <!-- Navegación principal y acciones que se mostrarán/ocultarán en móvil -->
+      <div class="nav-container" :class="{ 'mobile-menu-open': showMobileMenu }">
+        <nav class="main-nav">
+          <router-link to="/" class="nav-link" @click="showMobileMenu = false">Inicio</router-link>
+          <router-link to="/restaurants" class="nav-link" @click="showMobileMenu = false">Restaurantes</router-link>
+        </nav>
+        
+        <div class="actions">
+          <!-- Usuario o botón de login -->
+          <div v-if="auth.isAuthenticated()" class="user-dropdown">
+            <button class="user-btn" @click="toggleUserMenu">
+              {{ auth.getUser().name }}
+              <span class="dropdown-icon">▼</span>
+            </button>
+            <div v-if="showUserMenu" class="dropdown-menu">
+              <router-link to="/profile" @click="showUserMenu = false; showMobileMenu = false">Mi Perfil</router-link>
+              <router-link to="/orders" @click="showUserMenu = false; showMobileMenu = false">Mis Pedidos</router-link>
+              
+              <div class="dropdown-divider"></div>
+              
+              <template v-if="hasRestaurant">
+                <router-link :to="`/owner/dashboard/${restaurantId}`" class="dashboard-link" @click="showUserMenu = false; showMobileMenu = false">
+                  Panel de Control
+                </router-link>
+                <router-link :to="`/pos/${restaurantId}`" class="restaurant-link" @click="showUserMenu = false; showMobileMenu = false">
+                  Terminal POS
+                </router-link>
+              </template>
+              
+              <div class="dropdown-divider"></div>
+              
+              <a href="#" @click.prevent="handleLogout">Cerrar Sesión</a>
+            </div>
           </div>
+          <button v-else class="login-btn" @click="auth.showLoginModal(); showMobileMenu = false">
+            Iniciar sesión
+          </button>
+          
+          <!-- Carrito -->
+          <button class="cart-button" @click="handleCartClick(); showMobileMenu = false">
+            <span class="cart-icon">🛒</span>
+            <span class="price">${{ cartTotal.toFixed(2) }}</span>
+          </button>
+          
+          <!-- Toggle para tema oscuro -->
+          <button class="theme-toggle" @click="toggleDarkMode">
+            {{ isDarkMode ? '🌙' : '☀️' }}
+          </button>
         </div>
-        <button v-else class="login-btn" @click="auth.showLoginModal()">
-          Iniciar sesión
-        </button>
-        
-        <!-- Carrito -->
-        <button class="cart-button" @click="handleCartClick">
-          <span class="cart-icon">🛒</span>
-          <span class="price">${{ cartTotal.toFixed(2) }}</span>
-        </button>
-        
-        <!-- Toggle para tema oscuro -->
-        <button class="theme-toggle" @click="toggleDarkMode">
-          {{ isDarkMode ? '🌙' : '☀️' }}
-        </button>
       </div>
     </div>
   </div>
@@ -134,6 +139,10 @@ const restaurantId = computed(() => {
   padding: 15px 0;
   width: 100%;
   transition: background-color 0.3s;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .container {
@@ -166,6 +175,12 @@ const restaurantId = computed(() => {
   border-radius: 4px;
   margin-left: 8px;
   border: 1px solid var(--border-color);
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .actions {
@@ -216,12 +231,13 @@ const restaurantId = computed(() => {
   color: var(--text-color);
 }
 
-/* Añadir en el archivo de estilos global */
+/* Variables para el tema */
 :root {
   --background-color: #f8f8f8;
   --text-color: #333;
   --card-bg: #fff;
   --border-color: #eaeaea;
+  --topbar-bg: #fff;
 }
 
 .dark-mode {
@@ -229,6 +245,7 @@ const restaurantId = computed(() => {
   --text-color: #e0e0e0;
   --card-bg: #1e1e1e;
   --border-color: #333;
+  --topbar-bg: #1e1e1e;
 }
 
 body {
@@ -236,7 +253,7 @@ body {
   color: var(--text-color);
 }
 
-/* Añade estos estilos para los elementos de usuario */
+/* Estilos para los elementos de usuario */
 .user-dropdown {
   position: relative;
 }
@@ -265,7 +282,7 @@ body {
   border-radius: 4px;
   padding: 0.5rem 0;
   min-width: 150px;
-  box-shadow: var(--box-shadow);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 10;
   margin-top: 0.5rem;
 }
@@ -318,7 +335,7 @@ body {
   color: inherit;
 }
 
-/* ✅ AGREGAR ESTOS ESTILOS */
+/* Estilos para los enlaces especiales */
 .dropdown-divider {
   height: 1px;
   background-color: var(--border-color);
@@ -354,5 +371,169 @@ body {
 
 .dashboard-link:hover {
   background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+/* Ocultar el botón de menú móvil por defecto */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.mobile-menu-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Media queries para hacer responsive */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 12px 0;
+  }
+  
+  .container {
+    flex-wrap: wrap;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .nav-container {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 15px;
+    gap: 15px;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .nav-container.mobile-menu-open {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .main-nav {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .nav-link {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+  }
+  
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 8px;
+  }
+  
+  /* Mejorar menú desplegable en móvil */
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: none;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .user-dropdown {
+    width: 100%;
+  }
+  
+  .user-btn {
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+  
+  .cart-button, .theme-toggle, .login-btn {
+    padding: 10px 14px;
+    height: 42px;
+  }
+}
+
+/* Para móviles pequeños */
+@media (max-width: 480px) {
+  .brand-name {
+    font-size: 1.2rem;
+  }
+  
+  .actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .cart-button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .restaurant-link, 
+  .dashboard-link {
+    width: 100%;
+    text-align: center;
+    margin: 8px 0;
+    padding: 10px;
+  }
+  
+  .dropdown-menu a {
+    padding: 12px 16px;
+    font-size: 1rem;
+  }
+}
+
+/* Para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .container {
+    padding: 0 10px;
+  }
+  
+  .actions {
+    justify-content: center;
+  }
+  
+  .brand-name {
+    font-size: 1.1rem;
+  }
 }
 </style>

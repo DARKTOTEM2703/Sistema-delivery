@@ -748,30 +748,131 @@ onUnmounted(() => {
   border-radius: 8px;
 }
 
-/* Responsive styles */
-@media (max-width: 640px) {
+/* Mejoras responsivas para OrderTracking.vue */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+  
   .header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
+
+  .restaurant-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
   
+  .restaurant-info img {
+    margin-right: 0;
+    margin-bottom: 1rem;
+    width: 80px;
+    height: 80px;
+  }
+
   .timeline-steps {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   
   .step {
     flex-direction: row;
     text-align: left;
+    align-items: flex-start;
   }
   
   .step-icon {
-    margin-bottom: 0;
     margin-right: 1rem;
+    margin-bottom: 0;
+  }
+
+  .delivery-address, .estimated-time {
+    flex-direction: column;
   }
   
-  .step-content {
-    flex: 1;
+  .address-icon, .time-icon {
+    margin-right: 0;
+    margin-bottom: 0.75rem;
+  }
+  
+  .order-item {
+    flex-wrap: wrap;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+  
+  .map {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem;
+    border-radius: 6px;
+  }
+  
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .status-badge {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .restaurant-info {
+    padding: 0.75rem;
+  }
+  
+  .restaurant-info img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .order-details {
+    padding: 1rem;
+  }
+  
+  .timeline-progress-bar {
+    margin-bottom: 1rem;
+  }
+  
+  .step-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+  
+  .auto-update-indicator {
+    padding: 0.75rem;
+    margin: 1rem 0;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .refresh-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .container {
+    padding: 0.75rem;
+  }
+  
+  .timeline-steps {
+    gap: 1.25rem;
   }
 }
 </style>

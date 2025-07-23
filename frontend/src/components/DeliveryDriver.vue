@@ -177,4 +177,43 @@ function messageDriver() {
 .icon {
   margin-right: 0.5rem;
 }
+
+@media (max-width: 768px) {
+  .driver-card {
+    padding: 1.25rem;
+  }
+  
+  .contact-actions {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .driver-card {
+    padding: 1rem;
+  }
+  
+  .driver-avatar img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .driver-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .status-indicator {
+    align-self: flex-start;
+  }
+  
+  .contact-actions {
+    flex-direction: column;
+  }
+  
+  .btn-call, .btn-message {
+    width: 100%;
+  }
+}
 </style>

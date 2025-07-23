@@ -246,6 +246,80 @@ body {
   visibility: visible;
 }
 
+/* Reglas responsivas globales */
+:root {
+  --spacing-unit: 1rem;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-unit: 0.75rem;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.3rem;
+  }
+  
+  button {
+    min-height: 42px; /* Mejorar toque en móviles */
+  }
+  
+  input, select, textarea {
+    font-size: 16px; /* Prevenir zoom en iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-unit: 0.5rem;
+  }
+  
+  body {
+    font-size: 13px;
+  }
+  
+  h1 {
+    font-size: 1.6rem;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
+  }
+  
+  .page-enter-active,
+  .page-leave-active {
+    transition-duration: 0.2s;
+  }
+  
+  /* Mejorar espaciado general */
+  .container {
+    padding: 0.75rem;
+  }
+}
+
+/* Mejor soporte táctil */
+@media (hover: none) {
+  .btn, button[type="submit"], .nav-link, a.router-link {
+    cursor: default;
+  }
+}
+
 /* Transiciones de página */
 .page-enter-active,
 .page-leave-active {

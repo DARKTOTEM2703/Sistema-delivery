@@ -329,4 +329,42 @@ textarea {
   0% { transform: translate(-50%, -50%) rotate(0deg); }
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+/* Media queries para CheckoutForm */
+@media (max-width: 768px) {
+  .checkout-form {
+    width: 95%;
+    padding: 1.5rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .cancel-btn, .submit-btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkout-form {
+    padding: 1rem;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .order-summary {
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  input, select, textarea {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+}
 </style>

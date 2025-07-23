@@ -345,14 +345,46 @@ function validateForm() {
   cursor: not-allowed;
 }
 
+/* Media queries mejoradas para ProductModal */
 @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
   
   .modal-content {
     width: 95%;
+    max-height: 95vh;
     margin: 1rem;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .product-form {
+    padding: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
   }
 }
 </style>

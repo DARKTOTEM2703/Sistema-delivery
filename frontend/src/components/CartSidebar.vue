@@ -257,4 +257,37 @@ function handleCheckout() {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+/* Media queries para CartSidebar */
+@media (max-width: 768px) {
+  .cart-sidebar {
+    width: 85%;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-sidebar {
+    width: 90%;
+  }
+  
+  .cart-item {
+    flex-direction: column;
+  }
+  
+  .item-info {
+    margin-bottom: 10px;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .item-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .checkout-button {
+    padding: 12px 0;
+    font-size: 1rem;
+  }
+}
 </style>

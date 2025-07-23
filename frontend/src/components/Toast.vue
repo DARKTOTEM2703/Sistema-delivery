@@ -137,6 +137,14 @@ function getIcon(type) {
   transition: transform 0.3s ease;
 }
 
+/* Mejorar responsividad para Toast.vue */
+@media (max-width: 768px) {
+  .toast {
+    max-width: 320px;
+    min-width: 250px;
+  }
+}
+
 @media (max-width: 640px) {
   .toast-container {
     top: 0.5rem;
@@ -147,6 +155,32 @@ function getIcon(type) {
   .toast {
     min-width: auto;
     max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-container {
+    top: 0.75rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    gap: 0.4rem;
+  }
+  
+  .toast {
+    padding: 0.75rem;
+    max-width: 100%;
+    min-width: 0;
+    width: calc(100% - 1.5rem);
+    margin: 0 auto;
+    border-radius: 6px;
+  }
+  
+  .toast-message {
+    font-size: 0.9rem;
+  }
+  
+  .toast-icon {
+    font-size: 1.1rem;
   }
 }
 </style>

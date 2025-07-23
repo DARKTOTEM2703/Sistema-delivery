@@ -305,4 +305,65 @@ h1 {
 .add-address-btn {
   width: 100%;
 }
+
+@media (max-width: 640px) {
+  .profile-container {
+    margin: 1.5rem auto;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .profile-avatar {
+    margin: 0 auto;
+  }
+  
+  .profile-info {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .address-item {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .address-icon {
+    margin: 0 auto;
+  }
+  
+  .address-details {
+    text-align: center;
+  }
+  
+  .address-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    margin: 1rem auto;
+    padding: 0 0.75rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .profile-card, .addresses-card {
+    padding: 1rem;
+  }
+  
+  .form-group input {
+    padding: 0.6rem;
+  }
+}
 </style>

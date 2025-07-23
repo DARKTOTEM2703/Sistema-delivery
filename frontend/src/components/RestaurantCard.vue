@@ -12,7 +12,7 @@
       <div class="restaurant-category">{{ restaurant.category }}</div>
     </div>
     
-    <div class="restaurant-info">
+    <div class="restaurant-content">
       <div class="restaurant-header">
         <h3 class="restaurant-name">{{ restaurant.name }}</h3>
         <div class="rating">
@@ -80,12 +80,11 @@ function toggleFavorite() {
 
 <style scoped>
 .restaurant-card {
-  background: white;
+  background-color: var(--card-bg);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s, box-shadow 0.2s;
-  position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -93,7 +92,7 @@ function toggleFavorite() {
 
 .restaurant-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .restaurant-card.closed {
@@ -101,20 +100,9 @@ function toggleFavorite() {
 }
 
 .restaurant-image {
-  height: 180px;
-  position: relative;
-  overflow: hidden;
-}
-
-.restaurant-image img {
+  height: 160px;
   width: 100%;
-  height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.restaurant-card:hover .restaurant-image img {
-  transform: scale(1.05);
 }
 
 .restaurant-status {
@@ -151,8 +139,8 @@ function toggleFavorite() {
   text-transform: capitalize;
 }
 
-.restaurant-info {
-  padding: 1.5rem;
+.restaurant-content {
+  padding: 1rem;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -166,9 +154,9 @@ function toggleFavorite() {
 }
 
 .restaurant-name {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 0.5rem;
   color: var(--text-color);
 }
 
@@ -200,46 +188,40 @@ function toggleFavorite() {
 
 .restaurant-meta {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--text-color);
-  opacity: 0.7;
-  font-size: 0.9rem;
-}
-
-.meta-item .icon {
-  width: 20px;
-  text-align: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #666;
 }
 
 .restaurant-actions {
-  display: flex;
-  gap: 0.75rem;
   margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .view-menu-btn {
   flex: 1;
   background: var(--button-primary);
-  color: white;
   border: none;
+  color: white;
+  padding: 0.6rem;
   border-radius: 6px;
-  padding: 0.75rem 1rem;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  font-weight: 500;
+  transition: opacity 0.2s;
 }
 
-.view-menu-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--box-shadow);
+.view-menu-btn:hover {
+  opacity: 0.9;
 }
 
 .view-menu-btn:disabled {
@@ -249,27 +231,70 @@ function toggleFavorite() {
 }
 
 .favorite-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 0.75rem;
   cursor: pointer;
+  color: #666;
   transition: all 0.2s;
-  font-size: 1.2rem;
 }
 
-.favorite-btn:hover {
-  background: rgba(255, 0, 0, 0.1);
-  border-color: #ff6b6b;
+.favorite-btn.active {
+  color: #ff3b30;
+  background-color: rgba(255, 59, 48, 0.1);
 }
 
+.rating-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Media queries para responsividad */
 @media (max-width: 768px) {
-  .restaurant-meta {
-    gap: 0.25rem;
+  .restaurant-image {
+    height: 140px;
+  }
+  
+  .restaurant-name {
+    font-size: 1rem;
+  }
+  
+  .restaurant-content {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .restaurant-card {
+    border-radius: 10px;
   }
   
   .meta-item {
     font-size: 0.8rem;
+  }
+  
+  .restaurant-actions {
+    flex-direction: column;
+  }
+  
+  .view-menu-btn, .favorite-btn {
+    width: 100%;
+    height: 38px;
   }
 }
 </style>

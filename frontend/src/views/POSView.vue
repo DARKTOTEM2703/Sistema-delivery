@@ -793,8 +793,93 @@ onMounted(async () => {
     height: auto;
   }
   
+  .products-panel, .order-panel {
+    height: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
   .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .pos-header {
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .shift-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .pos-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .action-btn {
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  .categories {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    flex-wrap: nowrap;
+  }
+  
+  .category-btn {
+    white-space: nowrap;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pos-header {
+    padding: 0.75rem;
+  }
+  
+  .restaurant-info h1 {
+    font-size: 1.2rem;
+  }
+  
+  .products-panel {
+    padding: 0.75rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  
+  .product-tile {
+    padding: 0.75rem;
+  }
+  
+  .product-image {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .product-info h4 {
+    font-size: 0.8rem;
+  }
+  
+  .order-panel {
+    padding: 0.75rem;
+  }
+  
+  .payment-buttons {
+    grid-template-columns: 1fr;
   }
 }
 </style>

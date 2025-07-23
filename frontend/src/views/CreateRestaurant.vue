@@ -599,4 +599,76 @@ const submitForVerification = async () => {
     flex-direction: column;
   }
 }
+
+@media (max-width: 640px) {
+  .create-restaurant-container {
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .verification-progress {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .step {
+    width: 100%;
+    max-width: 180px;
+  }
+  
+  .step-content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .form-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .form-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  .form-section h2 {
+    font-size: 1.2rem;
+  }
+  
+  .document-item {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .step {
+    padding: 0.75rem;
+  }
+  
+  .step-content {
+    padding: 1.25rem 0.75rem;
+  }
+  
+  .form-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .form-group input, 
+  .form-group select, 
+  .form-group textarea {
+    padding: 0.6rem;
+  }
+  
+  .btn-primary, 
+  .btn-secondary {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .document-item {
+    padding: 1rem;
+  }
+}
 </style>

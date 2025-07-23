@@ -60,41 +60,9 @@ export default {
     try {
       return await this.get("/restaurants");
     } catch (error) {
-      // Fallback si no existe el endpoint
-      return {
-        data: [
-          {
-            id: 1,
-            name: "Pizzería Italiana",
-            description: "Auténtica pizza italiana con ingredientes frescos",
-            category: "italiana",
-            rating: 4.8,
-            total_reviews: 156,
-            delivery_time_min: 25,
-            delivery_time_max: 35,
-            delivery_fee: 3.5,
-            minimum_order: 15.0,
-            is_active: true,
-            cover_image:
-              "https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-          },
-          {
-            id: 2,
-            name: "Burger House",
-            description: "Las mejores hamburguesas gourmet de la ciudad",
-            category: "americana",
-            rating: 4.6,
-            total_reviews: 89,
-            delivery_time_min: 20,
-            delivery_time_max: 30,
-            delivery_fee: 2.99,
-            minimum_order: 12.0,
-            is_active: true,
-            cover_image:
-              "https://images.unsplash.com/photo-1571091718767-18b5b1457add?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-          },
-        ],
-      };
+      console.error("Error obteniendo restaurantes:", error);
+      // Si hay un error, devolver un array vacío en lugar del fallback
+      return { data: [] };
     }
   },
 

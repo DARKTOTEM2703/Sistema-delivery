@@ -314,9 +314,32 @@ function handleAddToCart(product) {
   font-weight: 500;
 }
 
-@media (max-width: 768px) {
+/* Mejorar responsividad para RestaurantMenu.vue */
+@media (max-width: 1024px) {
+  .restaurant-header {
+    height: 350px;
+  }
+  
+  .restaurant-info-overlay {
+    padding: 1.5rem;
+  }
+  
   .restaurant-name {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .restaurant-header {
+    height: 300px;
+  }
+  
+  .restaurant-name {
+    font-size: 1.8rem;
+  }
+  
+  .restaurant-description {
+    font-size: 1rem;
   }
   
   .restaurant-meta {
@@ -325,16 +348,46 @@ function handleAddToCart(product) {
   
   .menu-header {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 1rem;
   }
   
   .menu-search-input {
     width: 100%;
   }
+}
+
+@media (max-width: 480px) {
+  .restaurant-header {
+    height: 250px;
+  }
   
-  .products-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+  .restaurant-info-overlay {
+    padding: 1rem;
+  }
+  
+  .restaurant-name {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .restaurant-description {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .restaurant-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .menu-section {
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .menu-header h2 {
+    font-size: 1.3rem;
   }
 }
 </style>
